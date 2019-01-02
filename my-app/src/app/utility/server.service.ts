@@ -1,0 +1,42 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+import { UserCredentials } from '../models/auth/user-credentials.model'
+import { Response } from '../models/response.model';
+
+const httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type':  'application/json',
+      'Authorization': 'my-auth-token'
+    })}
+
+@Injectable()
+
+export class Server
+{
+    private ServerUrl = "http://localhost:49608/api/";
+    constructor(private http:HttpClient){
+    }
+    LogIn(email: string, password: string) : Promise<Response>
+    {
+        let credentials : UserCredentials = new UserCredentials();
+        credentials.Email = email;
+        credentials.Password = password;
+
+        return this.http.post<Response>(this.ServerUrl + "Auth/Login", JSON.stringify(credentials), httpOptions)
+            .toPromise()
+            .then((response) => response);
+    }
+    Register(email: string, password: string, username: string) : Promise<Response>
+    {
+        let credentials : UserCredentials = new UserCredentials();
+        credentials.Email = email;
+        credentials.Password = password;
+        credentials.Name = username;
+
+        return this.http.post<Response>(this.ServerUrl + "Auth/Register", JSON.stringify(credentials), httpOptions)
+            .toPromise()
+            .then((response) => response);
+    }
+    
+}

@@ -1,0 +1,104 @@
+.background {
+    background: #247BA0;
+    height: 100vh;
+    position: relative;
+}
+
+.login {
+    position: absolute;
+    left: 50%;
+    margin-left: -225px;
+    width: 450px;
+    border-radius: 30px;
+    background: #fff;
+    top: 100px;
+}
+
+.content {
+    padding: 60px;
+    text-align: center;
+}
+
+input {
+    height: 25px;
+    margin: 5px 0;
+    font-size: 15px;
+    color: #414755;
+
+    width: 318px;
+    border: solid #cccccc 1px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 25px;
+    text-indent: 40px;
+
+    background-repeat: no-repeat;
+    background-position: left top;
+    -webkit-background-size: 25px;
+    background-size: 25px;
+    background-position: 6px 5px;
+    padding: 5px 5px 5px 5px;
+
+}
+input::placeholder{
+    color: #7C7C7C;
+}
+#username{
+    background-image: url('../../assets/InputUsername.svg');
+}
+#email {
+    background-image: url('../../assets/InputEmail.svg');
+}
+
+input[type="password"] {
+    background-image: url('../../assets/InputPassword.svg');
+}
+
+button {
+    margin: 5px 0;
+    background: #414755;
+    color: #fff;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    width: 100%;
+    padding: 10px;
+    border: solid #7C7C7C 1px;
+    -webkit-border-radius: 30px;
+    -moz-border-radius: 30px;
+    border-radius: 30px;
+}
+
+button:hover {
+    background-color: #596170;
+    cursor: pointer;
+}
+
+#logo {
+    margin: 0 0 50px 0;
+    width: 260px;
+}
+
+#error {
+    margin: 0 0 10px;
+}
+
+#createaccount {
+    margin: 3px 0 0;
+}
+
+a {
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #7C7C7C;
+}
+
+.error{
+    margin: 0;
+    font-size: 14px;
+}
+.hidden{
+    display: none;
+}

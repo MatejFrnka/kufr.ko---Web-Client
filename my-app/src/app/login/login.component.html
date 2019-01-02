@@ -1,0 +1,12 @@
+<div class="background">
+    <div class="login">
+        <div class="content">
+            <img src="../../assets/Kufr.svg" alt="Kufr.ko logo" id="logo">
+            <input [(ngModel)]="email" id="email" type="text" placeholder="Email">
+            <input [(ngModel)]="password" id="password" type="password" placeholder="Password">
+            <p class="red" id="error"></p>
+            <button (click)="login()">Sign in</button>
+            <a [routerLink]="['/register']" id="createaccount" class="darkblue">Create an account</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,12 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+    margin: 0;
+    font-family: 'PT Sans', sans-serif;
+}
+
+.red {
+    color: #FF3838;
+}
+.darkblue{
+    color: #414755;
+}
