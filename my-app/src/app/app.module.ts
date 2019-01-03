@@ -9,12 +9,14 @@ import { FormsModule } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { Server } from './utility/server.service'
 import { HttpClientModule } from '@angular/common/http';
+import { MessagesComponent } from './app/messages/messages.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    RegisterComponent
+    RegisterComponent,
+    MessagesComponent
   ],
   imports: [
     BrowserModule,

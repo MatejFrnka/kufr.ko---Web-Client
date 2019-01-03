@@ -46,8 +46,12 @@ export class LoginComponent implements OnInit {
         {
         this.cookieService.set("token",  String(response.Data));
         //todo: add a place to navigate to
-        this.router.navigate(['/'])
-      }
+        this.router.navigate(['app/messages'])
+        }
+        else
+        {
+          this.displayError("Invalid login credentials");
+        }
       });
   }
 
