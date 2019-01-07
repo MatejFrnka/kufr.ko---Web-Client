@@ -10,10 +10,16 @@
     text-align: center;
     color: #fff;
 }
-.header > div {
+/*** PEOPLE SECTION ***/
+.scroll{
+    overflow-y: scroll;
+}
+#people .scroll{
+    height: calc(100vh - 186px);
+}
+#people .header > div {
     padding-top: 32px;
 }
-/*** PEOPLE SECTION ***/
 #people .header h1{
     font-size: 28px;
     margin: 0;
@@ -23,6 +29,7 @@
 #people .body{
     border-right: solid 1px #414755;
 }
+#search{height: 38px;}
 #search input{
     width: 100%;
     height: 100%;
@@ -51,28 +58,41 @@
     display: flex;
     border-bottom: solid 1px #414755;
 }
-.user .picture
+.user:hover{background-color: #EDEDED;}
+.picture
 {
-    padding: 20px;
-    height: 75px;
-    width: 75px;
+    padding: 16px;
+    height: 70px;
+    width: 70px;
 }
-.user .picture div{
+.picture div{
     width: 100%;
     height: 100%;
     background-repeat: no-repeat;
-    background-size: 75px 75px;
+    background-size: 70px 70px;
     background-position: 50% 50%;
     border-radius: 100px;
 }
+.notification{
+    padding-top: 2px;
+    font-size: 14px;
+    text-align: center;
+    color: #fff;
+    float: right;
+    background-color: #FF3838;
+    width: 22px;
+    height: 22px;
+    border-radius: 50px;
+}
 .user .text h2{
     padding: 0;
-    margin: 23px 0 0 0;
+    margin: 18px 0 0 0;
     color: #414755
 }
 .user .text p{
     padding: 0;
     margin: 0;
+    line-height: 16px;
 }
 .seen p{
     color: #7C7C7C;
@@ -80,10 +100,113 @@
 .seen h2{
     font-weight: 400;
 }
-.highlighted p{
+#people .body .highlighted p{
     color: #414755;
 }
-.highlighted h2{
+#people .body .highlighted h2{
     font-weight: 700;
 }
 /*** MESSAGES SECTION ***/
+#messages .scroll{
+    height: calc(100vh - 148px);
+}
+#messages .header{
+    display: flex;
+    justify-content: space-around;
+}
+.heading{
+    display: flex;
+    text-align: left;
+}
+.heading h2{
+    margin: 40px 0 0;
+    font-weight: 400;
+    line-height: 20px;
+}
+.heading p{margin: 0;}
+.message{
+    margin: 4px;
+    display: flex;
+}
+.sent{flex-direction: row-reverse;}
+.sent .content{ background-color: #ededed;border: #414755 solid 1px;}
+.recieved .content{background-color: #247BA0;color: #fff;}
+
+.message .content{
+    margin: 0 0 0 8px;
+    border-radius: 15px;
+    display: inline-block;
+    max-width: 60%;
+}
+.message .text{
+    
+    padding: 4px 12px;
+}
+.message .msgpic{
+    margin: 0 12px;
+    background-repeat: no-repeat;
+    background-size: 30px;
+    border-radius: 30px;
+    width: 30px;
+    height: 30px;
+}
+.message .img {background-color: transparent;}
+.message .img > img{
+    border-radius: 15px;
+    margin: -1px;
+}
+
+/***FOOTER***/
+.footer{
+    display: flex;
+    text-align: center;
+    
+    background-color: #247BA0;
+}
+/***PEOPLE***/
+#people .footer{
+    height: 48px;
+    justify-content: space-around;
+}
+#people .footer img{
+    height: 100%;
+}
+#people .footer > div{
+    padding: 9px 15px;
+    width: 100%;
+}
+#people .footer .highlighted{background-color: #1C9CD3;}
+#people .footer > div:hover{background-color: #1C9CD3;}
+/***MESSAGES***/
+#messages .footer{
+    height: 30px;
+    padding: 9px 15px;
+    justify-content: space-between;
+}
+#messages .footer input{
+        box-sizing: border-box;
+        height: 100%;
+        width: 100%;
+        font-size: 15px;
+        color: #414755;
+
+        border: solid #cccccc 1px;
+        -webkit-border-radius: 20px;
+        -moz-border-radius: 20px;
+        border-radius: 25px;
+    
+        text-indent: 12px;
+        background-repeat: no-repeat;
+        background-position: left top;
+        -webkit-background-size: 25px;
+        background-size: 25px;
+        background-position: 6px 5px;
+        padding: 5px 5px 5px 5px;
+}
+#messages .footer input::placeholder{color: #7C7C7C;}
+#messages .footer img{height: 100%;}
+#messages .sendInput{
+    flex: auto;
+    width: 100%;
+}
+#messages .sendButton{flex: 70px;}
