@@ -10,13 +10,17 @@ import { CookieService } from 'ngx-cookie-service';
 import { Server } from './utility/server.service'
 import { HttpClientModule } from '@angular/common/http';
 import { MessagesComponent } from './app/messages/messages.component';
+import { MessageListComponent } from './app/message-list/message-list.component';
+import { PeopleComponent } from './app/people/people.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RegisterComponent,
-    MessagesComponent
+    MessagesComponent,
+    MessageListComponent,
+    PeopleComponent
   ],
   imports: [
     BrowserModule,

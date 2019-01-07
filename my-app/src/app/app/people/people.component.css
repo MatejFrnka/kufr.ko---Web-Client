@@ -1,0 +1,70 @@
+.heading h2 {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: #414755;
+  margin: 0;
+  padding: 2px;
+  text-indent: 16px;
+  border-bottom: solid 1px #414755;
+}
+.user {
+  display: flex;
+  border-bottom: solid 1px #414755;
+}
+.user:hover {
+  background-color: #ededed;
+  cursor: pointer;
+}
+.picture {
+  padding: 10px 16px;
+  height: 40px;
+  width: 40px;
+}
+.picture div {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: 50% 50%;
+  border-radius: 100px;
+}
+.user h3 {
+  padding: 0;
+  margin: 13px 0 0 0;
+  color: #414755;
+  font-weight: 400;
+  font-size: 26px;
+}
+.user p {
+  padding: 0;
+  margin: 0;
+  line-height: 16px;
+}
+.friend,
+.request {
+    flex: auto;
+    display: flex;
+}
+.friend div:nth-child(1) {
+    flex: auto
+}
+.friend div:nth-child(2) {
+    width: 17px;
+    padding: 18px 20px 0 0;
+}
+.friend img {
+  width: 100%;
+}
+.request div:nth-child(1){
+    flex: auto
+}
+.request div:nth-child(2),
+.request div:nth-child(3),
+.request div:nth-child(4){
+    width: 17px;
+    padding: 18px 20px 0 0;
+}
+.btn img:hover{
+    width: 95%;
+}

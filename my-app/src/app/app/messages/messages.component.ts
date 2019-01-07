@@ -8,8 +8,9 @@ import { Component, OnInit } from '@angular/core';
 export class MessagesComponent implements OnInit {
 
   constructor() { }
+  //Contorls left panel with people and messages
+  public SidePanelNumber : number = 1;
 
   ngOnInit() {
   }
-
 }
