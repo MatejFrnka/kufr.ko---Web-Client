@@ -58,7 +58,7 @@
     display: flex;
     border-bottom: solid 1px #414755;
 }
-.user:hover{background-color: #EDEDED;}
+.user:hover{background-color: #EDEDED;cursor: pointer;}
 .picture
 {
     padding: 16px;
@@ -176,7 +176,14 @@
     width: 100%;
 }
 #people .footer .highlighted{background-color: #1C9CD3;}
-#people .footer > div:hover{background-color: #1C9CD3;}
+#people .footer > div:hover{background-color: #1C9CD3;cursor: pointer;}
+.bgIcon{
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: 50% 50%;
+    height: 100%; width: 100%;
+}
+#people .footer .notification{margin:-5px 35px 0 0;}
 /***MESSAGES***/
 #messages .footer{
     height: 30px;
