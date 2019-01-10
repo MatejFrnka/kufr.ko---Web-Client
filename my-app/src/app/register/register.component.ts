@@ -36,6 +36,7 @@ export class RegisterComponent implements OnInit {
     let valid = true;
     if (!this.emailRegEx.exec(this.email)) {
       valid = false;
+      console.log("asdf");
       document.getElementById("emailErr").classList.remove("hidden");
     }
     if (
@@ -60,7 +61,15 @@ export class RegisterComponent implements OnInit {
     this.server
       .Register(this.email, this.password, this.username)
       .then(response => {
-        if (response.StatusCode == 0) this.router.navigate(["/login"]);
+        if (response.StatusCode == 0) 
+        {
+          this.server.LogIn(this.email, this.password).then(response => {
+            if (response.StatusCode == 0) {
+              this.cookieService.set("token", String(response.Data));
+              this.router.navigate(["app/messages"]);
+            }
+          });
+        }
         if (response.StatusCode == 11)
           document.getElementById("emailDup").classList.remove("hidden");
       });

@@ -16,6 +16,9 @@
   background-color: #ededed;
   cursor: pointer;
 }
+.user:active {
+  background-color: #e8e5e5;
+}
 .picture {
   padding: 10px 16px;
   height: 40px;

@@ -1,7 +1,9 @@
 <div class="container">
   <div id="people">
     <div class="header">
-      <div><h1>Kufr.ko</h1></div>
+      <div>
+        <h1>Kufr.ko</h1>
+      </div>
     </div>
     <div class="body">
       <div id="search">
@@ -10,28 +12,30 @@
       <div id="people">
         <div class="scroll">
           <app-people *ngIf="SidePanelNumber == 1"></app-people>
-          <app-message-list *ngIf="SidePanelNumber == 0"></app-message-list>
+          <div *ngIf="SidePanelNumber == 0" id="groups">
+            <a class="user" *ngFor="let group of groups" (click)="selectedGroupId = group.Id" [class.selected]="group.Id==selectedGroupId" (click)="getMessages(group.Id)">
+              <div class="picture">
+                <span *ngIf="group.NewMessages != null && group.NewMessages > 0" class="notification">{{group.NewMessages>99?'99+':group.NewMessages}}</span>
+                <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
+              </div>
+              <div class="text" [class.highlighted]="group.NewMessages != null && group.NewMessages > 0" [class.seen]="group.NewMessages == null || group.NewMessages >= 0">
+                <h2>{{group.Name}}</h2>
+                <p>{{group.LastMessageText}}</p>
+                <p><small>{{calcLastOnline(group.LastMessageDate)}}</small></p>
+              </div>
+            </a>
+          </div>
         </div>
       </div>
     </div>
     <div class="footer">
-      <div
-        [class.highlighted]="SidePanelNumber == 0"
-        (click)="SidePanelNumber = 0"
-      >
-        <div
-          class="bgIcon"
-          style="background-image: url('../../../assets/Messages.svg');"
-        >
+      <div [class.highlighted]="SidePanelNumber == 0" (click)="SidePanelNumber = 0">
+        <div class="bgIcon" style="background-image: url('../../../assets/Messages.svg');">
           <span class="notification">12</span>
         </div>
       </div>
-      <div (click)="SidePanelNumber = 1"
-      [class.highlighted]="SidePanelNumber == 1">
-        <div
-          class="bgIcon"
-          style="background-image: url('../../../assets/Groups.svg');"
-        >
+      <div (click)="SidePanelNumber = 1" [class.highlighted]="SidePanelNumber == 1">
+        <div class="bgIcon" style="background-image: url('../../../assets/Groups.svg');">
           <span class="notification">12</span>
         </div>
       </div>
@@ -41,9 +45,7 @@
     <div class="header">
       <div class="heading">
         <div class="picture">
-          <div
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
         </div>
         <div>
           <h2>Karel Pepa</h2>
@@ -53,172 +55,100 @@
     </div>
     <div class="body">
       <div class="scroll">
-        <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+        <div class="message recieved" *ngFor="let message of messages[selectedGroupId]">
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
+          <div class="content text">{{message.Text}}</div>
+        </div>
+        <!--<div class="message recieved">
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
-          <div class="content text">Ahoj, jak se máš pepo?</div>
-        </div>
-        <div class="message recieved">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content img">
-            <img
-              src="https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg"
-              alt=""
-            />
+            <img src="https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg" alt="" />
           </div>
         </div>
         <div class="message sent">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>
         <div class="message sent">
-          <div
-            class="msgpic"
-            style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"
-          ></div>
+          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
-        </div>
+        </div>-->
       </div>
     </div>
     <div class="footer">

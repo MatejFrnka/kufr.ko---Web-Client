@@ -6,7 +6,7 @@
                 <p id="usernameErr" class="red hidden error">Please enter a username</p>
                 <input [(ngModel)]="email" id="email" type="text" placeholder="Email" name="name">
                 <p id="emailErr" class="red hidden error">Invalid email</p>
-                <p id="emailDup" class="red hidden error">Email already exists, please login</p>
+                <p id="emailDup" class="red hidden error">Email already exists</p>
                 <input [(ngModel)]="password" type="password" placeholder="Password" name="password">
                 <p id="passwordErr" class="red hidden error">Please enter a password</p>
             <button (click)="register()">Register</button>

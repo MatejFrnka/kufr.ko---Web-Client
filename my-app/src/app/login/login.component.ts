@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ɵConsole } from "@angular/core";
 import { CookieService } from "ngx-cookie-service";
 import { Server } from "../utility/server.service";
 import { Router } from "@angular/router";
@@ -27,24 +27,20 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
-    let valid = true;
     if (!this.emailRegEx.exec(this.email)) {
-      valid = false;
+      this.displayError("Invalid email");
+      return;
     }
     if (
       this.password == undefined ||
       this.password == null ||
       this.password == ""
     ) {
-      valid = false;
-    }
-    if (!valid) {
-      this.displayError("Invalid login credentials");
-      return;
+      this.displayError("Invalid password");
     }
     this.server.LogIn(this.email, this.password).then(response => {
       if (response.StatusCode == 0) {
-        this.cookieService.set("token", String(response.Data));
+        this.cookieService.set("token", String(response.Data), null, "/");
         this.router.navigate(["app/messages"]);
       } else if (response.StatusCode == 6 || response.StatusCode == 8) {
         this.displayError("Invalid email");

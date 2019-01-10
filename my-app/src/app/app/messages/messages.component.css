@@ -176,7 +176,46 @@
 #people .footer .notification {
   margin: -5px 35px 0 0;
 }
+.footer > div{
+  transition: .3s;
+}
 /***MESSAGES***/
+.user {
+  display: flex;
+  border-bottom: solid 1px #414755;
+}
+.user:hover {
+  background-color: #ededed;
+  cursor: pointer;
+}
+.selected{
+  background-color: #ededed;
+}
+.user:active {
+  background-color: #e8e5e5;
+}
+.user .text h2 {
+  padding: 0;
+  margin: 18px 0 0 0;
+  color: #414755;
+}
+.user .text p {
+  padding: 0;
+  margin: 0;
+  line-height: 16px;
+}
+.seen p {
+  color: #7c7c7c;
+}
+.seen h2 {
+  font-weight: 400;
+}
+.highlighted p {
+  color: #414755;
+}
+.highlighted h2 {
+  font-weight: 700;
+}
 #messages .footer {
   height: 30px;
   padding: 9px 15px;

@@ -10,7 +10,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { Server } from './utility/server.service'
 import { HttpClientModule } from '@angular/common/http';
 import { MessagesComponent } from './app/messages/messages.component';
-import { MessageListComponent } from './app/message-list/message-list.component';
 import { PeopleComponent } from './app/people/people.component';
 
 @NgModule({
@@ -19,7 +18,6 @@ import { PeopleComponent } from './app/people/people.component';
     LoginComponent,
     RegisterComponent,
     MessagesComponent,
-    MessageListComponent,
     PeopleComponent
   ],
   imports: [
