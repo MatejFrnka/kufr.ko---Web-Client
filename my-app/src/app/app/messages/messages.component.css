@@ -9,11 +9,13 @@
   height: 22px;
   border-radius: 50px;
 }
+
 .picture {
   padding: 16px;
   height: 70px;
   width: 70px;
 }
+
 .picture div {
   width: 100%;
   height: 100%;
@@ -22,40 +24,48 @@
   background-position: 50% 50%;
   border-radius: 100px;
 }
+
 .container {
   display: grid;
-  grid-template-columns: 330px auto;
-  grid-template-rows: 150px auto 150px;
+  grid-template-columns: 400px auto;
 }
 
 .header {
-  height: 100px;
+  padding-top: 15px;
+  height: 56px;
   background-color: #247ba0;
   text-align: center;
   color: #fff;
 }
+
 /*** PEOPLE SECTION ***/
 .scroll {
   overflow-y: scroll;
 }
+
 #people .scroll {
-  height: calc(100vh - 186px);
+  height: calc(100vh - 157px);
 }
-#people .header > div {
-  padding-top: 32px;
+
+#people .header>div {
+  padding-top: 0;
 }
+
 #people .header h1 {
   font-size: 28px;
   margin: 0;
   padding: 0;
   font-weight: 400;
 }
+
 #people .body {
   border-right: solid 1px #414755;
 }
+
 #search {
   height: 38px;
 }
+
 #search input {
   width: 100%;
   height: 100%;
@@ -76,40 +86,66 @@
   background-position: 12px 5px;
   background-image: url("../../../assets/FindFriends.svg");
 }
+
 #search input::placeholder {
   color: #7c7c7c;
 }
+
 /*** MESSAGES SECTION ***/
 #messages .scroll {
-  height: calc(100vh - 148px);
+  height: calc(100vh - 119px);
 }
+
 #messages .header {
   display: flex;
   justify-content: space-around;
 }
+
 .heading {
   display: flex;
   text-align: left;
 }
+
 .heading h2 {
-  margin: 40px 0 0;
+  margin: 0;
   font-weight: 400;
-  line-height: 20px;
+  font-size: 22px;
 }
+
 .heading p {
+  line-height: 10px;
   margin: 0;
 }
+
+.hpicture {
+  height:45px;
+  width: 45px;
+  margin-right: 20px; 
+}
+
+.hpicture div {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: 50% 50%;
+  border-radius: 100px;
+}
+
 .message {
   margin: 4px;
   display: flex;
 }
+
 .sent {
   flex-direction: row-reverse;
 }
+
 .sent .content {
   background-color: #ededed;
   border: #414755 solid 1px;
 }
+
 .recieved .content {
   background-color: #247ba0;
   color: #fff;
@@ -121,9 +157,11 @@
   display: inline-block;
   max-width: 60%;
 }
+
 .message .text {
   padding: 4px 12px;
 }
+
 .message .msgpic {
   margin: 0 12px;
   background-repeat: no-repeat;
@@ -132,10 +170,12 @@
   width: 30px;
   height: 30px;
 }
+
 .message .img {
   background-color: transparent;
 }
-.message .img > img {
+
+.message .img>img {
   border-radius: 15px;
   margin: -1px;
 }
@@ -147,25 +187,120 @@
 
   background-color: #247ba0;
 }
+
 /***PEOPLE***/
+.ppicture {
+  padding: 10px 16px;
+  height: 40px;
+  width: 40px;
+}
+
+.ppicture div {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: 50% 50%;
+  border-radius: 100px;
+}
+
+.person {
+  display: flex;
+  border-bottom: solid 1px #414755;
+}
+
+.person:hover {
+  background-color: #ededed;
+  cursor: pointer;
+}
+
+.person:active {
+  background-color: #e8e5e5;
+}
+
+.person h3 {
+  padding: 0;
+  margin: 16px 0 0 0;
+  color: #414755;
+  font-weight: 400;
+  font-size: 22px;
+}
+
+.person p {
+  padding: 0;
+  margin: 0;
+  line-height: 16px;
+}
+
+#people .heading h2 {
+  width: 100%;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: #414755;
+  margin: 0;
+  padding: 2px;
+  text-indent: 16px;
+  border-bottom: solid 1px #414755;
+}
+
+#people .friend,
+#people .request {
+  flex: auto;
+  display: flex;
+}
+
+#people .friend div:nth-child(1) {
+  flex: auto
+}
+
+#people .friend div:nth-child(2) {
+  width: 17px;
+  padding: 18px 20px 0 0;
+}
+
+#people .friend img {
+  width: 100%;
+}
+
+#people .request div:nth-child(1) {
+  flex: auto
+}
+
+#people .request div:nth-child(2),
+#people .request div:nth-child(3),
+#people .request div:nth-child(4) {
+  width: 17px;
+  padding: 18px 20px 0 0;
+}
+
+#people .btn img:hover {
+  width: 95%;
+}
+
 #people .footer {
   height: 48px;
   justify-content: space-around;
 }
+
 #people .footer img {
   height: 100%;
 }
-#people .footer > div {
+
+#people .footer>div {
   padding: 9px 15px;
   width: 100%;
 }
+
 #people .footer .highlighted {
   background-color: #1c9cd3;
 }
-#people .footer > div:hover {
+
+#people .footer>div:hover {
   background-color: #1c9cd3;
   cursor: pointer;
 }
+
 .bgIcon {
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -173,54 +308,68 @@
   height: 100%;
   width: 100%;
 }
+
 #people .footer .notification {
-  margin: -5px 35px 0 0;
+  margin: -5px 52px 0 0;
 }
-.footer > div{
+
+.footer>div {
   transition: .3s;
 }
+
 /***MESSAGES***/
 .user {
   display: flex;
   border-bottom: solid 1px #414755;
 }
+
 .user:hover {
   background-color: #ededed;
   cursor: pointer;
 }
-.selected{
+
+.selected {
   background-color: #ededed;
 }
+
 .user:active {
   background-color: #e8e5e5;
 }
+
 .user .text h2 {
   padding: 0;
   margin: 18px 0 0 0;
   color: #414755;
 }
+
 .user .text p {
   padding: 0;
   margin: 0;
   line-height: 16px;
 }
+
 .seen p {
   color: #7c7c7c;
 }
+
 .seen h2 {
   font-weight: 400;
 }
+
 .highlighted p {
   color: #414755;
 }
+
 .highlighted h2 {
   font-weight: 700;
 }
+
 #messages .footer {
   height: 30px;
   padding: 9px 15px;
   justify-content: space-between;
 }
+
 #messages .footer input {
   box-sizing: border-box;
   height: 100%;
@@ -241,16 +390,20 @@
   background-position: 6px 5px;
   padding: 5px 5px 5px 5px;
 }
+
 #messages .footer input::placeholder {
   color: #7c7c7c;
 }
+
 #messages .footer img {
   height: 100%;
 }
+
 #messages .sendInput {
   flex: auto;
   width: 100%;
 }
+
 #messages .sendButton {
   flex: 70px;
 }

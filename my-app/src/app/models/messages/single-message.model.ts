@@ -8,4 +8,5 @@ export class SinlgeMessage{
     public Id_Group : number;
     public UserInfo : UserInfo;
     public Sent : Date;
+    public UserIsSender: boolean;
 }
