@@ -8,6 +8,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { GetMessage } from '../models/messages/get-message.model';
 import { SendMessage } from '../models/messages/send-message.model';
 import { GetNewMessages } from '../models/messages/get-new-messages.model';
+import { Observable } from 'rxjs';
 
 
 
@@ -102,7 +103,7 @@ export class Server {
             .toPromise()
             .then((response) => response);
     }
-    SearchFriend(name: string): Promise<Response> {
+    SearchFriend(name: string): Observable<Response> {
         let params = new HttpParams().set("fulltext", name);
         let token = this.cookieService.get('token');
         let headers = new HttpHeaders({
@@ -110,9 +111,7 @@ export class Server {
             'Token': token
         });
 
-        return this.http.get<Response>(this.ServerUrl + "Friend/SearchNewFriends", { headers: headers, params: params })
-            .toPromise()
-            .then((response) => response);
+        return this.http.get<Response>(this.ServerUrl + "Friend/SearchNewFriends", { headers: headers, params: params });
     }
     /***SELF***/
     GetSelf(): Promise<Response> {

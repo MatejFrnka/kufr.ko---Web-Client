@@ -5,6 +5,7 @@ import { SinlgeMessage } from 'src/app/models/messages/single-message.model';
 import { UserPublic } from 'src/app/models/people/user-public.model';
 import { UserInfo } from 'src/app/models/messages/user-info.model';
 import { Router } from '@angular/router';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-messages',
@@ -23,14 +24,15 @@ export class MessagesComponent implements OnInit {
 
   private friends: UserPublic[];
   private pendingFriends: UserPublic[];
+  private searchResult: UserPublic[] = [];
+  private searching: boolean = false;
 
   private messages: { [id: number]: SinlgeMessage[]; } = {};
   private pendingMessages: { [id: number]: SinlgeMessage[]; } = {};
   private messageInput: string = "";
   private messagesElement;
   private loadingMessages: { [id: number]: boolean } = {};
-
-
+  private allMessagesLoaded: { [id: number]: boolean } = {};
 
   private currentUser: UserPublic
 
@@ -70,22 +72,24 @@ export class MessagesComponent implements OnInit {
   };
   public loadMoreMessages() {
     let selectedGroup = this.selectedGroupId;
-    if (this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) {
+    if ((this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) && (this.allMessagesLoaded[selectedGroup] == undefined || !this.allMessagesLoaded)) {
       this.loadingMessages[selectedGroup] = true;
-      console.log("messages before message id: " + this.messages[selectedGroup][this.messages[selectedGroup].length-1].Id)
-      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length-1].Id).then(response => {
+      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].Id).then(response => {
         this.CheckCode(response.StatusCode);
         this.loadingMessages[selectedGroup] = false;
-        console.log(response)
-        console.log(this.messages[selectedGroup])
         this.messages[selectedGroup] = this.messages[selectedGroup].concat(response.Data as SinlgeMessage[]);
+        if ((response.Data as SinlgeMessage[]).length == 0)
+          this.allMessagesLoaded[selectedGroup] = true;
       })
     }
   }
   loadMessages(idGroup: number): SinlgeMessage[] {
     if (this.messages[idGroup] == undefined) {
-      this.server.GetMessages(idGroup, 50)
+      let amount = 50;
+      this.server.GetMessages(idGroup, amount)
         .then((response) => {
+          if((response.Data as SinlgeMessage[]).length<amount)
+            this.allMessagesLoaded[idGroup] = true;
           this.messages[idGroup] = response.Data as SinlgeMessage[];
           //document.getElementById("messageBody").scrollTo(0, 500)
           return this.messages[idGroup];
@@ -96,12 +100,10 @@ export class MessagesComponent implements OnInit {
   getValidGroups(filter: string): GroupInfo[] {
     return this.groups.filter(item => item.Name == filter);
   }
-
   loadPeople() {
     this.server.GetExistingFriends().then((response) => this.friends = response.Data as UserPublic[]);
     this.server.GetPendingFriends().then((response) => this.pendingFriends = response.Data as UserPublic[]);
   }
-
   isFirstOfGroup(indexOfMessage: number, idGroup: number) {
     if (indexOfMessage == 0)
       return true;
@@ -146,9 +148,6 @@ export class MessagesComponent implements OnInit {
       })
     });
   }
-  onScroll() {
-    alert("scrolled");
-  }
   joinMessages(arrayA: SinlgeMessage[], arrayB: SinlgeMessage[]): SinlgeMessage[] {
     arrayB.forEach(element => {
       let alreadyIn: boolean = false;
@@ -166,11 +165,9 @@ export class MessagesComponent implements OnInit {
       str = str.substring(0, maxLength - 2) + "..";
     return str;
   }
-
   loadSelf() {
     this.server.GetSelf().then((response) => this.currentUser = response.Data as UserPublic)
   }
-
   findGroupById(groupId: number): GroupInfo {
     if (groupId == undefined || groupId == null)
       return new GroupInfo();
@@ -180,11 +177,21 @@ export class MessagesComponent implements OnInit {
     //TODO: finish
     return "• Online";
   }
-
   changeUserStatus(UserId: number, Status: number) {
     this.server.UpdateFriendStatus(UserId, Status).then((response) => {
       this.CheckCode(response.StatusCode);
       this.loadPeople();
+    })
+  }
+  private prevSearchRequest : Subscription = null;
+  searchForPeople(SearchVal){
+    if(this.prevSearchRequest != null){
+      this.prevSearchRequest.unsubscribe();
+    }
+    this.searching = true;
+    this.prevSearchRequest = this.server.SearchFriend(SearchVal).subscribe((response)=> {
+      this.searchResult = response.Data as UserPublic[];
+      this.searching = false;
     })
   }
   private CheckCode(StatusCode: number) {

@@ -59,7 +59,7 @@
 }
 
 #people .body {
-  border-right: solid 1px #414755;
+  border-right: solid 1px #7C7C7C;
 }
 
 #search {
@@ -73,7 +73,7 @@
   padding: 10px;
   font-size: 15px;
   color: #414755;
-  border-bottom: solid 1px #414755;
+  border-bottom: solid 1px #7C7C7C;
   border-top: none;
   border-left: none;
   border-right: none;
@@ -118,9 +118,9 @@
 }
 
 .hpicture {
-  height:45px;
+  height: 45px;
   width: 45px;
-  margin-right: 20px; 
+  margin-right: 20px;
 }
 
 .hpicture div {
@@ -143,7 +143,7 @@
 
 .sent .content {
   background-color: #ededed;
-  border: #414755 solid 1px;
+  border: #7C7C7C solid 1px;
 }
 
 .recieved .content {
@@ -206,7 +206,7 @@
 
 .person {
   display: flex;
-  border-bottom: solid 1px #414755;
+  border-bottom: solid 1px #7C7C7C;
 }
 
 .person:hover {
@@ -241,7 +241,7 @@
   margin: 0;
   padding: 2px;
   text-indent: 16px;
-  border-bottom: solid 1px #414755;
+  border-bottom: solid 1px #7C7C7C;
 }
 
 #people .friend,
@@ -320,7 +320,7 @@
 /***MESSAGES***/
 .user {
   display: flex;
-  border-bottom: solid 1px #414755;
+  border-bottom: solid 1px #7C7C7C;
 }
 
 .user:hover {
@@ -406,4 +406,22 @@
 
 #messages .sendButton {
   flex: 70px;
+}
+
+.loading {
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+.loading img {
+  width: 30px;
+}
+
+.seperator{
+  text-align: center;
+}
+.seperator p{
+  font-size: 14px;
+  color: #7C7C7C;
+
 }

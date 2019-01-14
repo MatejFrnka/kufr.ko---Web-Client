@@ -7,7 +7,8 @@
     </div>
     <div class="body">
       <div id="search">
-        <input type="text" [placeholder]="SidePanelNumber==0?'Search..':'Find friends..'" autocomplete="off" [(ngModel)]="Search"/>
+        <input type="text" [placeholder]="SidePanelNumber==0?'Search..':'Find friends..'" autocomplete="off"
+          [(ngModel)]="Search" (ngModelChange)="searchForPeople(Search)" />
       </div>
       <div id="people">
         <div class="scroll">
@@ -33,50 +34,79 @@
             <div class="heading">
               <h2>Friend requests</h2>
             </div>
-            <a class="person" *ngFor="let person of pendingFriends">
-              <div class="ppicture">
-                <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
-              </div>
 
-              <div class="request">
-                <div>
-                  <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+            <div *ngFor="let person of pendingFriends">
+              <a class="person" *ngIf="person.Name.includes(Search)">
+                <div class="ppicture">
+                  <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
                 </div>
-                <div>
-                  <div class="btn">
-                    <img src="../../../assets/Accept.svg" alt="Accept friend request" (click)="changeUserStatus(person.Id, 1)" />
-                  </div>
-                </div>
-                <div>
-                  <div class="btn">
-                    <img src="../../../assets/Deny.svg" alt="Deny friend request" (click)="changeUserStatus(person.Id, 0)" />
-                  </div>
-                </div>
-                <div class="btn">
+
+                <div class="request">
                   <div>
-                    <img src="../../../assets/Block.svg" alt="Block user" (click)="changeUserStatus(person.Id, 2)" />
+                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+                  </div>
+                  <div>
+                    <div class="btn">
+                      <img src="../../../assets/Accept.svg" alt="Accept friend request" (click)="changeUserStatus(person.Id, 1)" />
+                    </div>
+                  </div>
+                  <div>
+                    <div class="btn">
+                      <img src="../../../assets/Deny.svg" alt="Deny friend request" (click)="changeUserStatus(person.Id, 0)" />
+                    </div>
+                  </div>
+                  <div class="btn">
+                    <div>
+                      <img src="../../../assets/Block.svg" alt="Block user" (click)="changeUserStatus(person.Id, 2)" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </a>
+              </a>
+            </div>
 
             <div class="heading">
               <h2>Friends</h2>
             </div>
 
-            <a class="person" *ngFor="let person of friends">
-              <div class="ppicture">
-                <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
-              </div>
-              <div class="friend">
-                <div>
-                  <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+            <div *ngFor="let person of friends">
+              <a class="person" *ngIf="person.Name.includes(Search)">
+                <div class="ppicture">
+                  <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
                 </div>
-                <div class="btn">
-                  <img src="../../../assets/UserSettings.svg" alt="User settings" />
+                <div class="friend">
+                  <div>
+                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+                  </div>
+                  <div class="btn">
+                    <img src="../../../assets/UserSettings.svg" alt="User settings" />
+                  </div>
                 </div>
+              </a>
+            </div>
+
+            <div *ngIf="Search != 0">
+              <div class="heading">
+                <h2>People</h2>
               </div>
-            </a>
+
+              <a class="person" *ngFor="let person of searchResult">
+                <div class="ppicture">
+                  <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
+                </div>
+                <div class="friend">
+                  <div>
+                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+                  </div>
+                  <div class="btn">
+                    <img src="../../../assets/UserSettings.svg" alt="User settings" />
+                  </div>
+                </div>
+              </a>
+              <div class="seperator" *ngIf="searchResult.length == 0 && !searching">
+                <p>No search results</p>
+              </div>
+              <div class="loading" *ngIf="searching"><img src="../../../assets/Loading.svg" alt="Loading"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -110,6 +140,11 @@
       <div class="scroll" id="messageBody">
 
         <!--MESSAGES-->
+        <div *ngIf="loadingMessages[selectedGroupId]" class="loading"><img src="../../../assets/Loading.svg" alt="Loading"></div>
+        <div *ngIf="allMessagesLoaded[selectedGroupId]" class="seperator">
+          <p>All messages loaded</p>
+        </div>
+
         <div class="message" *ngFor="let message of (messages[selectedGroupId]==undefined?messages[selectedGroupId]:messages[selectedGroupId].reverse());index as i;"
           [ngClass]="{
           'sent': message.UserIsSender,
@@ -150,7 +185,7 @@
           (keydown.enter)="sendMessage()" />
       </div>
       <div class="sendButton">
-        <img src="../../../assets/Upload.svg" alt=""/>
+        <img src="../../../assets/Upload.svg" alt="" />
       </div>
       <div class="sendButton">
         <img src="../../../assets/Send.svg" alt="" (click)="sendMessage()" (keydown)="sendMessage()" />
