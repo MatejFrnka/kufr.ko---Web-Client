@@ -15,19 +15,26 @@
           <!--GROUPS-->
           <div *ngIf="SidePanelNumber == 0" id="groups">
             <div *ngFor="let group of groups">
-              <a class="user" *ngIf="group.Name.includes(Search)" (click)="selectedGroupId = group.Id" [class.selected]="group.Id==selectedGroupId"
-                (click)="loadMessages(group.Id)">
+              <a title="{{group.Name}}" class="user" *ngIf="group.Name.toLowerCase().includes(Search.toLowerCase())"
+                (click)="selectedGroupId = group.Id" [class.selected]="group.Id==selectedGroupId" (click)="loadMessages(group.Id)">
                 <div class="picture">
                   <span *ngIf="group.NewMessages != null && group.NewMessages > 0" class="notification">{{group.NewMessages>99?'99+':group.NewMessages}}</span>
                   <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
                 </div>
                 <div class="text" [class.highlighted]="group.NewMessages != null && group.NewMessages > 0" [class.seen]="group.NewMessages == null || group.NewMessages >= 0">
-                  <h2>{{group.Name}}</h2>
+                  <h2>{{trimStr(group.Name, 22)}}</h2>
                   <p>{{trimStr(group.LastMessageText,26)}}</p>
                   <p><small>{{calcLastOnline(group.LastMessageDate)}}</small></p>
                 </div>
               </a>
             </div>
+            <div class="seperator" *ngIf="amountValidGroups() == 0 && Search.length > 0">
+              <p>No search results</p>
+            </div>
+            <div class="seperator" *ngIf="amountValidGroups() == 0 && Search.length == 0">
+              <p>You aren't in any group</p>
+            </div>
+            <div class="loading" *ngIf="amountValidGroups() == null"><img src="../../../assets/Loading.svg" alt="Loading"></div>
           </div>
           <!--PEOPLE-->
           <div *ngIf="SidePanelNumber == 1" id="people">
@@ -36,14 +43,14 @@
             </div>
 
             <div *ngFor="let person of pendingFriends">
-              <a class="person" *ngIf="person.Name.includes(Search)">
+              <a class="person" *ngIf="person.Name.toLowerCase().includes(Search.toLowerCase())">
                 <div class="ppicture">
                   <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
                 </div>
 
                 <div class="request">
                   <div>
-                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 18)}}</h3>
                   </div>
                   <div>
                     <div class="btn">
@@ -69,13 +76,13 @@
             </div>
 
             <div *ngFor="let person of friends">
-              <a class="person" *ngIf="person.Name.includes(Search)">
+              <a class="person" *ngIf="person.Name.toLowerCase().includes(Search.toLowerCase())">
                 <div class="ppicture">
                   <div style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
                 </div>
                 <div class="friend">
                   <div>
-                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 18)}}</h3>
                   </div>
                   <div class="btn">
                     <img src="../../../assets/UserSettings.svg" alt="User settings" />
@@ -95,10 +102,10 @@
                 </div>
                 <div class="friend">
                   <div>
-                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 12)}}</h3>
+                    <h3 title="{{person.Name}}">{{trimStr(person.Name, 18)}}</h3>
                   </div>
                   <div class="btn">
-                    <img src="../../../assets/UserSettings.svg" alt="User settings" />
+                    <img src="../../../assets/AddFriend.svg" alt="User settings" (click)="server.SendFriendRequest(person.Id)" />
                   </div>
                 </div>
               </a>
@@ -114,12 +121,12 @@
     <div class="footer">
       <div [class.highlighted]="SidePanelNumber == 0" (click)="SidePanelNumber = 0">
         <div class="bgIcon" style="background-image: url('../../../assets/Messages.svg');">
-          <span class="notification">12</span>
+          <span *ngIf="newMessagesTotal()!=0" class="notification">{{newMessagesTotal()>=100?'99+':newMessagesTotal().toString()}}</span>
         </div>
       </div>
       <div (click)="SidePanelNumber = 1" [class.highlighted]="SidePanelNumber == 1">
         <div class="bgIcon" style="background-image: url('../../../assets/Groups.svg');">
-          <span class="notification">12</span>
+          <span *ngIf="pendingFriends != undefined && pendingFriends.length!= 0" class="notification">{{pendingFriends.length}}</span>
         </div>
       </div>
     </div>
@@ -145,24 +152,27 @@
           <p>All messages loaded</p>
         </div>
 
-        <div class="message" *ngFor="let message of (messages[selectedGroupId]==undefined?messages[selectedGroupId]:messages[selectedGroupId].reverse());index as i;"
-          [ngClass]="{
+        <div *ngFor="let message of (messages[selectedGroupId]==undefined?messages[selectedGroupId]:messages[selectedGroupId].reverse());index as i;">
+          <div class="date" *ngIf="isFirstOfGroup(i,selectedGroupId)">
+            <p>{{getDate(message.Sent)}}</p>
+          </div>
+          <div class="message" [ngClass]="{
           'sent': message.UserIsSender,
-          'recieved': !message.UserIsSender }">
-          <div class="msgpic" [ngStyle]="{
-            'background-image': isLastOfGroup(i, selectedGroupId)?'url(https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg)':''
-          }"></div>
-          <div class="content text">{{message.Text}}</div>
-        </div>
-        <div class="message" *ngFor="let message of pendingMessages[selectedGroupId];" [ngClass]="{
-          'sent': message.UserInfo.Id == currentUser.Id,
-          'recieved': message.UserInfo.Id != currentUser.Id
+          'recieved': !message.UserIsSender 
         }">
-          <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
-          <div class="content text">{{message.Text}}</div>
+            <div class="msgpic" [ngStyle]="{
+            'background-image': isLastOfGroup(i, selectedGroupId)?'url(https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg)': ''
+          }"></div>
+            <div class="content text">{{message.Text}}</div>
+          </div>
         </div>
-        <div id="bottom"></div>
-        <!--
+
+        <div class="message sending" *ngFor="let message of pendingMessages[selectedGroupId];">
+          <div class="msgpic"></div>
+          <div class="content text">{{message.Text}}</div>
+
+          <div id="bottom"></div>
+          <!--
         <div class="message recieved">
           <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content img">
@@ -177,6 +187,7 @@
           <div class="msgpic" style="background-image: url('https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg')"></div>
           <div class="content text">Ahoj, jak se máš pepo?</div>
         </div>-->
+        </div>
       </div>
     </div>
     <div class="footer">
@@ -185,7 +196,8 @@
           (keydown.enter)="sendMessage()" />
       </div>
       <div class="sendButton">
-        <img src="../../../assets/Upload.svg" alt="" />
+        <img src="../../../assets/Upload.svg" alt="" (click)="test()" />
+        <!--<input type="file" (change)="handleFileInput($event.target.files)">-->
       </div>
       <div class="sendButton">
         <img src="../../../assets/Send.svg" alt="" (click)="sendMessage()" (keydown)="sendMessage()" />

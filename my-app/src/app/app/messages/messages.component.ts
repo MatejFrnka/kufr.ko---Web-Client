@@ -37,6 +37,8 @@ export class MessagesComponent implements OnInit {
   private currentUser: UserPublic
 
   private eventOptions: boolean | { capture?: boolean, passive?: boolean };
+
+  private fileToUpload: File = null;
   ngOnDestroy() {
     this.messagesElement.removeEventListener('scroll', this.loadMoreMessages);
   }
@@ -65,12 +67,16 @@ export class MessagesComponent implements OnInit {
   scroll = (): void => {
     let messageEl = document.getElementById("messageBody");
     if (messageEl.scrollTop <= 30) {
+      if (messageEl.scrollTop == 0)
+        messageEl.scrollTo(0, 1)
       this.ngZone.run(() => {
         this.loadMoreMessages();
       });
     }
   };
   public loadMoreMessages() {
+
+
     let selectedGroup = this.selectedGroupId;
     if ((this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) && (this.allMessagesLoaded[selectedGroup] == undefined || !this.allMessagesLoaded)) {
       this.loadingMessages[selectedGroup] = true;
@@ -83,22 +89,27 @@ export class MessagesComponent implements OnInit {
       })
     }
   }
+  private scrollToBottom: boolean = false;
   loadMessages(idGroup: number): SinlgeMessage[] {
     if (this.messages[idGroup] == undefined) {
       let amount = 50;
+      this.loadingMessages[idGroup] = true;
       this.server.GetMessages(idGroup, amount)
         .then((response) => {
-          if((response.Data as SinlgeMessage[]).length<amount)
+          this.scrollToBottom = true
+          this.loadingMessages[idGroup] = false;
+          if ((response.Data as SinlgeMessage[]).length < amount)
             this.allMessagesLoaded[idGroup] = true;
           this.messages[idGroup] = response.Data as SinlgeMessage[];
-          //document.getElementById("messageBody").scrollTo(0, 500)
-          return this.messages[idGroup];
-        })
+        });
     }
     return this.messages[idGroup];
   }
-  getValidGroups(filter: string): GroupInfo[] {
-    return this.groups.filter(item => item.Name == filter);
+  ngAfterViewChecked() {
+    if (this.scrollToBottom) {
+      this.messagesElement.scrollTo(50, 100000);
+      this.scrollToBottom = false;
+    }
   }
   loadPeople() {
     this.server.GetExistingFriends().then((response) => this.friends = response.Data as UserPublic[]);
@@ -106,8 +117,8 @@ export class MessagesComponent implements OnInit {
   }
   isFirstOfGroup(indexOfMessage: number, idGroup: number) {
     if (indexOfMessage == 0)
-      return true;
-    if (this.messages[idGroup][indexOfMessage].UserInfo.Id != this.messages[idGroup][indexOfMessage - 1].UserInfo.Id)
+      return false;
+    if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].Sent, this.messages[idGroup][indexOfMessage].Sent) > 300)
       return true;
     return false;
   }
@@ -116,13 +127,15 @@ export class MessagesComponent implements OnInit {
       return true;
     if (this.messages[idGroup][indexOfMessage].UserInfo.Id != this.messages[idGroup][indexOfMessage + 1].UserInfo.Id)
       return true;
+    if (this.dateDiff(this.messages[idGroup][indexOfMessage].Sent, this.messages[idGroup][indexOfMessage + 1].Sent) > 300)
+      return true;
     return false;
   }
   sendMessage() {
     let group = this.selectedGroupId;
     let messageText = this.messageInput;
     this.messageInput = "";
-
+    this.scrollToBottom = true;
     let tempMessage = new SinlgeMessage();
     tempMessage.Text = messageText;
     tempMessage.UserInfo = new UserInfo();
@@ -130,7 +143,6 @@ export class MessagesComponent implements OnInit {
     tempMessage.UserInfo.Id_Attachment = this.currentUser.Id_Attachment;
     tempMessage.Edited = false;
     tempMessage.Id_Group = group;
-
     if (this.pendingMessages[group] == undefined)
       this.pendingMessages[group] = [];
     this.pendingMessages[group].push(tempMessage);
@@ -161,7 +173,7 @@ export class MessagesComponent implements OnInit {
     return arrayA;
   }
   trimStr(str: string, maxLength: number): string {
-    if (str.length > maxLength)
+    if (str != undefined && str.length > maxLength)
       str = str.substring(0, maxLength - 2) + "..";
     return str;
   }
@@ -183,20 +195,59 @@ export class MessagesComponent implements OnInit {
       this.loadPeople();
     })
   }
-  private prevSearchRequest : Subscription = null;
-  searchForPeople(SearchVal){
-    if(this.prevSearchRequest != null){
+  amountValidGroups(): number {
+    let result = null;
+    if (this.groups != undefined) {
+      result = 0;
+      this.groups.forEach(element => {
+        if (element.Name.toLowerCase().includes(this.Search.toLocaleLowerCase()))
+          result++;
+      });
+    }
+    return result;
+  }
+  private prevSearchRequest: Subscription = null;
+  searchForPeople(SearchVal) {
+    if (this.prevSearchRequest != null) {
       this.prevSearchRequest.unsubscribe();
     }
     this.searching = true;
-    this.prevSearchRequest = this.server.SearchFriend(SearchVal).subscribe((response)=> {
+    this.prevSearchRequest = this.server.SearchFriend(SearchVal).subscribe((response) => {
       this.searchResult = response.Data as UserPublic[];
       this.searching = false;
     })
+  }
+  newMessagesTotal(): number {
+    let result = 0;
+    if (this.groups != undefined)
+      this.groups.forEach(element => {
+        result += element.NewMessages;
+      });
+    return result;
   }
   private CheckCode(StatusCode: number) {
     if (StatusCode == 2) {
       this.router.navigate(["login"])
     }
+  }
+  dateDiff(a: Date, b: Date): number {
+    a = new Date(a);
+    b = new Date(b);
+    return ((b.getTime() - a.getTime()) / 1000);
+  }
+  getDate(date: Date): string {
+    date = new Date(date);
+    let result = "";
+    let now = new Date(Date.now());
+    if (!(now.getDate() == date.getDate() && now.getMonth == date.getMonth && now.getFullYear == date.getFullYear))
+      result = date.getDate() + "." + (date.getMonth() + 1).toString() + ". ";
+    if (now.getFullYear != date.getFullYear)
+      result = date.getFullYear() + " ";
+    result += ("0" + date.getHours().toString()).slice(-2) + ":" + ("0" + date.getMinutes().toString()).slice(-2);
+    return result;
+  }
+  handleFileInput(file: FileList) {
+    this.fileToUpload = file.item(0);
+    console.log(file);
   }
 }
