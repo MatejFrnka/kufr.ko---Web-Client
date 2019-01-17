@@ -153,17 +153,17 @@
         </div>
 
         <div *ngFor="let message of (messages[selectedGroupId]==undefined?messages[selectedGroupId]:messages[selectedGroupId].reverse());index as i;">
-          <div class="date" *ngIf="isFirstOfGroup(i,selectedGroupId)">
-            <p>{{getDate(message.Sent)}}</p>
+          <div class="date" *ngIf="message.isFirst">
+            <p>{{getDate(message.message.Sent)}}</p>
           </div>
           <div class="message" [ngClass]="{
-          'sent': message.UserIsSender,
-          'recieved': !message.UserIsSender 
+          'sent': message.message.UserIsSender,
+          'recieved': !message.message.UserIsSender 
         }">
             <div class="msgpic" [ngStyle]="{
-            'background-image': isLastOfGroup(i, selectedGroupId)?'url(https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg)': ''
+            'background-image': message.isLast?'url(https://cdn-images-1.medium.com/fit/c/100/100/0*EdUYcQhX6TPWdQ6p.jpg)': ''
           }"></div>
-            <div class="content text">{{message.Text}}</div>
+            <div class="content text">{{message.message.Text}}</div>
           </div>
         </div>
 
@@ -195,9 +195,11 @@
         <input type="text" placeholder="Send a message..." name="messageText" [(ngModel)]="messageInput"
           (keydown.enter)="sendMessage()" />
       </div>
-      <div class="sendButton">
-        <img src="../../../assets/Upload.svg" alt="" (click)="test()" />
-        <!--<input type="file" (change)="handleFileInput($event.target.files)">-->
+      <div class="sendButton" id="sendFile">
+        <label for="selectFile">
+            <img src="../../../assets/Upload.svg" alt=""/>
+        </label>
+        <input id="selectFile" type="file" (change)="handleFileInput($event.target.files)">
       </div>
       <div class="sendButton">
         <img src="../../../assets/Send.svg" alt="" (click)="sendMessage()" (keydown)="sendMessage()" />

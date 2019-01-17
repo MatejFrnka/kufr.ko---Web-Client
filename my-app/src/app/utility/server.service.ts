@@ -51,7 +51,7 @@ export class Server {
     /***GROUPS***/
     GetGroups(): Promise<Response> {
         let httpOptions = this.getHeaders();
-        return this.http.get<Response>(this.ServerUrl + "Group/GetAll", {headers: httpOptions})
+        return this.http.get<Response>(this.ServerUrl + "Group/GetAll", { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
@@ -59,34 +59,40 @@ export class Server {
     GetNewMessages(groupIds: number[], lastId: number) {
         let httpOptions = this.getHeaders();
         let newMessages: GetNewMessages = new GetNewMessages(lastId, groupIds)
-        return this.http.post<Response>(this.ServerUrl + "Message/GetNewMessages", JSON.stringify(newMessages), {headers: httpOptions})
+        return this.http.post<Response>(this.ServerUrl + "Message/GetNewMessages", JSON.stringify(newMessages), { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
     GetMessages(groupId: number, amount: number, startId: number = 0): Promise<Response> {
         let httpOptions = this.getHeaders();
         let getMessage = new GetMessage(groupId, startId, amount)
-        return this.http.post<Response>(this.ServerUrl + "Message/GetMessages", JSON.stringify(getMessage), {headers: httpOptions})
+        return this.http.post<Response>(this.ServerUrl + "Message/GetMessages", JSON.stringify(getMessage), { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
     SendMessage(Id_Attachment: number[], Id_Group: number, MsgText: string): Promise<Response> {
         let message = new SendMessage(Id_Attachment, Id_Group, MsgText);
         let httpOptions = this.getHeaders();
-        return this.http.post<Response>(this.ServerUrl + "Message/SendMessage", JSON.stringify(message), {headers: httpOptions})
+        return this.http.post<Response>(this.ServerUrl + "Message/SendMessage", JSON.stringify(message), { headers: httpOptions })
             .toPromise()
             .then((response) => response);
+    }
+    SetMessageStauts(IdMessage: number, Seen: boolean) {
+        let params = new HttpParams().set("Seen", String(Seen)).set("Id_Message", IdMessage.toString());
+        let headers = this.getHeaders();
+        return this.http.post<Response>(this.ServerUrl + "Message/SetMessageState", null, { headers: headers, params: params })
+            .toPromise()
     }
     /***FRIENDS***/
     GetExistingFriends(): Promise<Response> {
         let httpOptions = this.getHeaders();
-        return this.http.get<Response>(this.ServerUrl + "Friend/LoadExistingFriends", {headers: httpOptions})
+        return this.http.get<Response>(this.ServerUrl + "Friend/LoadExistingFriends", { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
     GetPendingFriends(): Promise<Response> {
         let httpOptions = this.getHeaders();
-        return this.http.get<Response>(this.ServerUrl + "Friend/LoadPending", {headers: httpOptions})
+        return this.http.get<Response>(this.ServerUrl + "Friend/LoadPendingFromMe", { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
@@ -104,7 +110,7 @@ export class Server {
 
         let headers = this.getHeaders();
 
-        return this.http.post<Response>(this.ServerUrl + "Friend/CreateFriendRequest", null, {headers: headers, params: params})
+        return this.http.post<Response>(this.ServerUrl + "Friend/CreateFriendRequest", null, { headers: headers, params: params })
             .toPromise()
             .then((response) => response);
     }
@@ -117,11 +123,28 @@ export class Server {
     /***SELF***/
     GetSelf(): Promise<Response> {
         let httpOptions = this.getHeaders();
-        return this.http.get<Response>(this.ServerUrl + "Account/GetSelf", {headers: httpOptions})
+        return this.http.get<Response>(this.ServerUrl + "Account/GetSelf", { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
-
+    /***FILE***/
+    AttachmentExists(hash: string): Promise<Response> {
+        let headers = this.getHeaders();
+        let params = new HttpParams().set("hash", hash);
+        return this.http.get<Response>(this.ServerUrl + "File/AttachmentExists", { headers: headers, params: params })
+            .toPromise();
+    }
+    UploadAttachment(base64: string): Promise<Response> {
+        let headers = this.getHeaders();
+        return this.http.post<Response>(this.ServerUrl + "File/SaveAttachment", { attachment: base64 }, { headers: headers })
+            .toPromise();
+    }
+    DownloadAttachment(Id_Attachment: number): Promise<Response> {
+        let headers = this.getHeaders();
+        let params = new HttpParams().set("IdAttachment", Id_Attachment.toString())
+        return this.http.get<Response>(this.ServerUrl + "File/SaveAttachment", { headers: headers, params: params })
+            .toPromise();
+    }
     private getHeaders() {
         let token = this.cookieService.get('token');
         return new HttpHeaders({

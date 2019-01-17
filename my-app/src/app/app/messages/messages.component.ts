@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone, Input } from '@angular/core';
 import { Server } from 'src/app/utility/server.service';
 import { GroupInfo } from 'src/app/models/group/group-info.model';
 import { SinlgeMessage } from 'src/app/models/messages/single-message.model';
@@ -6,6 +6,7 @@ import { UserPublic } from 'src/app/models/people/user-public.model';
 import { UserInfo } from 'src/app/models/messages/user-info.model';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
+import { FileService } from '../../utility/file.service';
 
 @Component({
   selector: 'app-messages',
@@ -15,6 +16,7 @@ import { Observable, Subscription } from 'rxjs';
 export class MessagesComponent implements OnInit {
 
   constructor(private server: Server, private router: Router, private ngZone: NgZone) { }
+  private fileService = new FileService(this.server);
   public Search: string = "";
   //Contorls left panel with people and messages
   public SidePanelNumber: number = 0;
@@ -22,12 +24,13 @@ export class MessagesComponent implements OnInit {
   private groups: GroupInfo[];
   private selectedGroupId: number;
 
+
   private friends: UserPublic[];
   private pendingFriends: UserPublic[];
   private searchResult: UserPublic[] = [];
   private searching: boolean = false;
 
-  private messages: { [id: number]: SinlgeMessage[]; } = {};
+  private messages: { [id: number]: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[]; } = {};
   private pendingMessages: { [id: number]: SinlgeMessage[]; } = {};
   private messageInput: string = "";
   private messagesElement;
@@ -38,7 +41,6 @@ export class MessagesComponent implements OnInit {
 
   private eventOptions: boolean | { capture?: boolean, passive?: boolean };
 
-  private fileToUpload: File = null;
   ngOnDestroy() {
     this.messagesElement.removeEventListener('scroll', this.loadMoreMessages);
   }
@@ -64,6 +66,12 @@ export class MessagesComponent implements OnInit {
     this.loadPeople();
     this.loadSelf();
   }
+  ngAfterViewChecked() {
+    if (this.scrollToBottom) {
+      this.messagesElement.scrollTo(50, 100000);
+      this.scrollToBottom = false;
+    }
+  }
   scroll = (): void => {
     let messageEl = document.getElementById("messageBody");
     if (messageEl.scrollTop <= 30) {
@@ -74,23 +82,81 @@ export class MessagesComponent implements OnInit {
       });
     }
   };
-  public loadMoreMessages() {
+  isFirstOfGroup(indexOfMessage: number, idGroup: number) {
+    if (indexOfMessage == 0)
+      return false;
+    if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].message.Sent, this.messages[idGroup][indexOfMessage].message.Sent) > 300)
+      return true;
+    return false;
+  }
+  isLastOfGroup(indexOfMessage: number, data: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[]) {
+    if (indexOfMessage == data.length - 1)
+      return true;
+    if (data[indexOfMessage].message.UserInfo.Id != data[indexOfMessage + 1].message.UserInfo.Id)
+      return true;
+    if (this.dateDiff(data[indexOfMessage].message.Sent, data[indexOfMessage + 1].message.Sent) > 300)
+      return true;
+    return false;
+  }
+  private MessageSeen(IdMessage: number) {
+    this.server.SetMessageStauts(IdMessage, true);
+  }
+  private convertToMessageObj(messages: SinlgeMessage[]): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
+    let result: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] = [];
+    messages.forEach(element => {
+      result.push({ message: element, isFirst: false, isLast: false })
+    });
 
-
+    return result;
+  }
+  private updateMsgObj(result: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[], idGroup: number): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
+    for (let i = 0; i < result.length; i++) {
+      if (i == result.length - 1) {
+        result[i].isLast = true
+      }
+      else if (this.dateDiff(result[i + 1].message.Sent, result[i].message.Sent) > 300) {
+        result[i].isLast = true
+      }
+      else if (result[i+1].message.UserInfo.Id != result[i].message.UserInfo.Id)
+        result[i].isLast = true
+    }
+    for (let i = 1; i < result.length; i++) {
+      result[i - 1].isFirst = result[i].isLast
+    }
+    return result;
+  }
+  private convertToMessageArray(messages: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[]): SinlgeMessage[] {
+    let result: SinlgeMessage[] = [];
+    messages.forEach(element => {
+      result.push(element.message);
+    });
+    return result;
+  }
+  getNewMessages(group: number): Promise<any> {
+    return this.server.GetNewMessages([group], this.messages[group][0].message.Id).then((response) => {
+      this.CheckCode(response.StatusCode);
+      this.messages[group] = this.joinMessages(this.messages[group], (response.Data as SinlgeMessage[]));
+      this.messages[group] = this.updateMsgObj(this.messages[group], group);
+      this.MessageSeen(this.messages[group][0].message.Id);
+    })
+  }
+  loadMoreMessages() {
     let selectedGroup = this.selectedGroupId;
     if ((this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) && (this.allMessagesLoaded[selectedGroup] == undefined || !this.allMessagesLoaded)) {
       this.loadingMessages[selectedGroup] = true;
-      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].Id).then(response => {
+      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].message.Id).then(response => {
         this.CheckCode(response.StatusCode);
         this.loadingMessages[selectedGroup] = false;
-        this.messages[selectedGroup] = this.messages[selectedGroup].concat(response.Data as SinlgeMessage[]);
+        this.messages[selectedGroup] = this.convertToMessageObj(this.convertToMessageArray(this.messages[selectedGroup]).concat(response.Data as SinlgeMessage[]));
+        this.MessageSeen(this.messages[selectedGroup][0].message.Id);
         if ((response.Data as SinlgeMessage[]).length == 0)
           this.allMessagesLoaded[selectedGroup] = true;
+        this.messages[selectedGroup] = this.updateMsgObj(this.messages[selectedGroup], selectedGroup);
       })
     }
   }
   private scrollToBottom: boolean = false;
-  loadMessages(idGroup: number): SinlgeMessage[] {
+  loadMessages(idGroup: number): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
     if (this.messages[idGroup] == undefined) {
       let amount = 50;
       this.loadingMessages[idGroup] = true;
@@ -100,36 +166,16 @@ export class MessagesComponent implements OnInit {
           this.loadingMessages[idGroup] = false;
           if ((response.Data as SinlgeMessage[]).length < amount)
             this.allMessagesLoaded[idGroup] = true;
-          this.messages[idGroup] = response.Data as SinlgeMessage[];
+          this.messages[idGroup] = this.convertToMessageObj(response.Data as SinlgeMessage[]);
+          this.MessageSeen(this.messages[idGroup][0].message.Id);
+          this.messages[idGroup] = this.updateMsgObj(this.messages[idGroup], idGroup);
         });
     }
     return this.messages[idGroup];
   }
-  ngAfterViewChecked() {
-    if (this.scrollToBottom) {
-      this.messagesElement.scrollTo(50, 100000);
-      this.scrollToBottom = false;
-    }
-  }
   loadPeople() {
     this.server.GetExistingFriends().then((response) => this.friends = response.Data as UserPublic[]);
     this.server.GetPendingFriends().then((response) => this.pendingFriends = response.Data as UserPublic[]);
-  }
-  isFirstOfGroup(indexOfMessage: number, idGroup: number) {
-    if (indexOfMessage == 0)
-      return false;
-    if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].Sent, this.messages[idGroup][indexOfMessage].Sent) > 300)
-      return true;
-    return false;
-  }
-  isLastOfGroup(indexOfMessage: number, idGroup: number) {
-    if (indexOfMessage == this.messages[idGroup].length - 1)
-      return true;
-    if (this.messages[idGroup][indexOfMessage].UserInfo.Id != this.messages[idGroup][indexOfMessage + 1].UserInfo.Id)
-      return true;
-    if (this.dateDiff(this.messages[idGroup][indexOfMessage].Sent, this.messages[idGroup][indexOfMessage + 1].Sent) > 300)
-      return true;
-    return false;
   }
   sendMessage() {
     let group = this.selectedGroupId;
@@ -149,28 +195,20 @@ export class MessagesComponent implements OnInit {
 
     this.server.SendMessage([], group, messageText).then((response) => {
       this.CheckCode(response.StatusCode);
-      this.server.GetNewMessages([group], this.messages[group][0].Id).then((response) => {
-        this.CheckCode(response.StatusCode);
-        if (response.StatusCode == 0) {
-          this.messages[group] = this.joinMessages((response.Data as SinlgeMessage[]), this.messages[group]);
-        } else {
-          console.log("Error code: " + response.StatusCode)
-        }
-        this.pendingMessages[group] = undefined;
-      })
+      this.getNewMessages(group).then(this.pendingMessages[group] = undefined)
     });
   }
-  joinMessages(arrayA: SinlgeMessage[], arrayB: SinlgeMessage[]): SinlgeMessage[] {
+  joinMessages(arrayB: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[], arrayA: SinlgeMessage[]): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
     arrayB.forEach(element => {
       let alreadyIn: boolean = false;
       arrayA.forEach(item => {
-        if (item.Id == element.Id)
+        if (item.Id == element.message.Id)
           alreadyIn = true;
       });
       if (!alreadyIn)
-        arrayA.push(element)
+        arrayA.push(element.message)
     });
-    return arrayA;
+    return this.convertToMessageObj(arrayA);
   }
   trimStr(str: string, maxLength: number): string {
     if (str != undefined && str.length > maxLength)
@@ -247,7 +285,7 @@ export class MessagesComponent implements OnInit {
     return result;
   }
   handleFileInput(file: FileList) {
-    this.fileToUpload = file.item(0);
-    console.log(file);
+    let fileToUpload = file.item(0);
+    this.fileService.sendFile(fileToUpload)
   }
 }
