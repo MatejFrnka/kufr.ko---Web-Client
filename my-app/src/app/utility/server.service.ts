@@ -9,15 +9,16 @@ import { GetMessage } from '../models/messages/get-message.model';
 import { SendMessage } from '../models/messages/send-message.model';
 import { GetNewMessages } from '../models/messages/get-new-messages.model';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 
 
 @Injectable()
 
 export class Server {
-    private ServerUrl = "http://kufrko-rest-api.azurewebsites.net/api/";
-    //private ServerUrl = "http://localhost:49608/api/";
-    constructor(private http: HttpClient, private cookieService: CookieService, ) {
+    //private ServerUrl = "http://kufrko-rest-api.azurewebsites.net/api/";
+    private ServerUrl = "http://localhost:49608/api/";
+    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router ) {
     }
     LogIn(email: string, password: string): Promise<Response> {
         let httpOptions = {
@@ -127,6 +128,30 @@ export class Server {
             .toPromise()
             .then((response) => response);
     }
+    UpdateUsername(username: string): Promise<Response> {
+        let headers = this.getHeaders();
+        let params = new HttpParams().set("username", username)
+        return this.http.get<Response>(this.ServerUrl + "Account/UpdateUsername",{ headers: headers, params: params })
+            .toPromise()
+    }
+    UpdatePassword(password: string): Promise<Response> {
+        let headers = this.getHeaders();
+        let params = new HttpParams().set("password", password)
+        return this.http.get<Response>(this.ServerUrl + "Account/EditPassword",{ headers: headers, params: params })
+            .toPromise()
+    }
+    UpdateProfilePicture(idProfilePicture: number): Promise<Response> {
+        let headers = this.getHeaders();
+        let params = new HttpParams().set("Id_Attachment", idProfilePicture.toString())
+        return this.http.get<Response>(this.ServerUrl + "Account/EditProfilePicture", { headers: headers, params: params })
+            .toPromise()
+    }
+    UpdateVisibility(Visibility: number): Promise<Response> {
+        let headers = this.getHeaders();
+        let params = new HttpParams().set("visibility", Visibility.toString())
+        return this.http.get<Response>(this.ServerUrl + "Account/UpdateVisibility", { headers: headers, params: params })
+            .toPromise()
+    }
     /***FILE***/
     AttachmentExists(hash: string): Promise<Response> {
         let headers = this.getHeaders();
@@ -136,7 +161,7 @@ export class Server {
     }
     UploadAttachment(base64: string): Promise<Response> {
         let headers = this.getHeaders();
-        return this.http.post<Response>(this.ServerUrl + "File/SaveAttachment", { attachment: base64 }, { headers: headers })
+        return this.http.post<Response>(this.ServerUrl + "File/SaveAttachment", JSON.stringify({ attachment: base64 }), { headers: headers })
             .toPromise();
     }
     DownloadAttachment(Id_Attachment: number): Promise<Response> {
@@ -144,6 +169,12 @@ export class Server {
         let params = new HttpParams().set("IdAttachment", Id_Attachment.toString())
         return this.http.get<Response>(this.ServerUrl + "File/SaveAttachment", { headers: headers, params: params })
             .toPromise();
+    }
+
+    LogOut(){
+        console.log("asdf");
+        this.cookieService.delete("token", "/");
+        this.router.navigate["login"];
     }
     private getHeaders() {
         let token = this.cookieService.get('token');

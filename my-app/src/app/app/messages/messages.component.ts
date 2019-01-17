@@ -19,10 +19,18 @@ export class MessagesComponent implements OnInit {
   private fileService = new FileService(this.server);
   public Search: string = "";
   //Contorls left panel with people and messages
-  public SidePanelNumber: number = 0;
+  public SidePanelNumber: number = 2;
 
   private groups: GroupInfo[];
-  private selectedGroupId: number;
+
+  get selectedGroupId(): number {
+    return this._selectedGroupId;
+  }
+  set selectedGroupId(value) {
+    this._selectedGroupId = value;
+    this.groups.find(a => a.Id == value).NewMessages = 0
+  }
+  private _selectedGroupId: number;
 
 
   private friends: UserPublic[];
@@ -30,14 +38,68 @@ export class MessagesComponent implements OnInit {
   private searchResult: UserPublic[] = [];
   private searching: boolean = false;
 
-  private messages: { [id: number]: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[]; } = {};
+  private messages: { [id: number]: SinlgeMessage[]; } = {};
   private pendingMessages: { [id: number]: SinlgeMessage[]; } = {};
   private messageInput: string = "";
   private messagesElement;
   private loadingMessages: { [id: number]: boolean } = {};
   private allMessagesLoaded: { [id: number]: boolean } = {};
 
-  private currentUser: UserPublic
+  public password: string = ""
+  public visibility: number = 0;
+  public currentUser: UserPublic = new UserPublic();
+  public beingEdited: { [id: string]: boolean } = {};
+  public loadingEdit: { [id: string]: boolean } = {};
+  public failedEdit: { [id: string]: boolean } = {};
+
+  updateUsername(username: string) {
+    this.loadingEdit["username"] = true;
+    this.server.UpdateUsername(username).then((response) => {
+      this.loadingEdit["username"] = false;
+      if (response.StatusCode == 0) {
+        this.beingEdited["username"] = false;
+        this.failedEdit["username"] = false;
+      }
+      else {
+        this.failedEdit["username"] = true;
+      }
+    })
+  }
+  updatePassword(password: string) {
+    this.loadingEdit["password"] = true;
+    this.server.UpdatePassword(password).then((response) => {
+      this.loadingEdit["password"] = false;
+      if (response.StatusCode == 0) {
+        this.beingEdited["password"] = false;
+        this.failedEdit["password"] = false;
+      }
+      else {
+        this.failedEdit["password"] = true;
+      }
+    })
+  }
+  updateVisibility(visibility: number) {
+    this.loadingEdit["visibility"] = true;
+    this.server.UpdateVisibility(visibility).then((response) => {
+      this.loadingEdit["visibility"] = false;
+      if (response.StatusCode == 0) {
+        this.beingEdited["visibility"] = false;
+        this.failedEdit["visibility"] = false;
+      }
+      else {
+        this.failedEdit["visibility"] = true;
+      }
+    })
+  }
+  updateProfilePic(file: FileList) {
+    this.loadingEdit["profile"] = true;
+    console.log("asdf");
+  }
+  deleteSelf() {
+    if (confirm("Are you sure you want to delete your account?")) {
+
+    }
+  }
 
   private eventOptions: boolean | { capture?: boolean, passive?: boolean };
 
@@ -82,93 +144,62 @@ export class MessagesComponent implements OnInit {
       });
     }
   };
-  isFirstOfGroup(indexOfMessage: number, idGroup: number) {
+  loadSelf() {
+    this.server.GetSelf().then((response) => this.currentUser = response.Data as UserPublic)
+  }
+  isFirstOfGroup(indexOfMessage: number, idGroup: number): boolean {
     if (indexOfMessage == 0)
       return false;
-    if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].message.Sent, this.messages[idGroup][indexOfMessage].message.Sent) > 300)
+    if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].Sent, this.messages[idGroup][indexOfMessage].Sent) > 300)
       return true;
     return false;
   }
-  isLastOfGroup(indexOfMessage: number, data: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[]) {
-    if (indexOfMessage == data.length - 1)
+  isLastOfGroup(indexOfMessage: number, idGroup: number): boolean {
+    if (indexOfMessage == this.messages[idGroup].length - 1)
       return true;
-    if (data[indexOfMessage].message.UserInfo.Id != data[indexOfMessage + 1].message.UserInfo.Id)
+    if (this.messages[idGroup][indexOfMessage].UserInfo.Id != this.messages[idGroup][indexOfMessage + 1].UserInfo.Id)
       return true;
-    if (this.dateDiff(data[indexOfMessage].message.Sent, data[indexOfMessage + 1].message.Sent) > 300)
+    if (this.dateDiff(this.messages[idGroup][indexOfMessage].Sent, this.messages[idGroup][indexOfMessage + 1].Sent) > 300)
       return true;
     return false;
   }
   private MessageSeen(IdMessage: number) {
     this.server.SetMessageStauts(IdMessage, true);
   }
-  private convertToMessageObj(messages: SinlgeMessage[]): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
-    let result: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] = [];
-    messages.forEach(element => {
-      result.push({ message: element, isFirst: false, isLast: false })
-    });
-
-    return result;
-  }
-  private updateMsgObj(result: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[], idGroup: number): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
-    for (let i = 0; i < result.length; i++) {
-      if (i == result.length - 1) {
-        result[i].isLast = true
-      }
-      else if (this.dateDiff(result[i + 1].message.Sent, result[i].message.Sent) > 300) {
-        result[i].isLast = true
-      }
-      else if (result[i+1].message.UserInfo.Id != result[i].message.UserInfo.Id)
-        result[i].isLast = true
-    }
-    for (let i = 1; i < result.length; i++) {
-      result[i - 1].isFirst = result[i].isLast
-    }
-    return result;
-  }
-  private convertToMessageArray(messages: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[]): SinlgeMessage[] {
-    let result: SinlgeMessage[] = [];
-    messages.forEach(element => {
-      result.push(element.message);
-    });
-    return result;
-  }
   getNewMessages(group: number): Promise<any> {
-    return this.server.GetNewMessages([group], this.messages[group][0].message.Id).then((response) => {
+    return this.server.GetNewMessages([group], this.messages[group][0].Id).then((response) => {
       this.CheckCode(response.StatusCode);
       this.messages[group] = this.joinMessages(this.messages[group], (response.Data as SinlgeMessage[]));
-      this.messages[group] = this.updateMsgObj(this.messages[group], group);
-      this.MessageSeen(this.messages[group][0].message.Id);
+      this.MessageSeen(this.messages[group][0].Id);
     })
   }
   loadMoreMessages() {
     let selectedGroup = this.selectedGroupId;
     if ((this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) && (this.allMessagesLoaded[selectedGroup] == undefined || !this.allMessagesLoaded)) {
       this.loadingMessages[selectedGroup] = true;
-      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].message.Id).then(response => {
+      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].Id).then(response => {
         this.CheckCode(response.StatusCode);
         this.loadingMessages[selectedGroup] = false;
-        this.messages[selectedGroup] = this.convertToMessageObj(this.convertToMessageArray(this.messages[selectedGroup]).concat(response.Data as SinlgeMessage[]));
-        this.MessageSeen(this.messages[selectedGroup][0].message.Id);
+        this.messages[selectedGroup] = this.messages[selectedGroup].concat(response.Data as SinlgeMessage[]);
+        this.MessageSeen(this.messages[selectedGroup][0].Id);
         if ((response.Data as SinlgeMessage[]).length == 0)
           this.allMessagesLoaded[selectedGroup] = true;
-        this.messages[selectedGroup] = this.updateMsgObj(this.messages[selectedGroup], selectedGroup);
       })
     }
   }
   private scrollToBottom: boolean = false;
-  loadMessages(idGroup: number): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
+  loadMessages(idGroup: number): SinlgeMessage[] {
     if (this.messages[idGroup] == undefined) {
       let amount = 50;
       this.loadingMessages[idGroup] = true;
       this.server.GetMessages(idGroup, amount)
         .then((response) => {
-          this.scrollToBottom = true
           this.loadingMessages[idGroup] = false;
           if ((response.Data as SinlgeMessage[]).length < amount)
             this.allMessagesLoaded[idGroup] = true;
-          this.messages[idGroup] = this.convertToMessageObj(response.Data as SinlgeMessage[]);
-          this.MessageSeen(this.messages[idGroup][0].message.Id);
-          this.messages[idGroup] = this.updateMsgObj(this.messages[idGroup], idGroup);
+          this.messages[idGroup] = response.Data as SinlgeMessage[];
+          this.MessageSeen(this.messages[idGroup][0].Id);
+          this.scrollToBottom = true
         });
     }
     return this.messages[idGroup];
@@ -198,25 +229,22 @@ export class MessagesComponent implements OnInit {
       this.getNewMessages(group).then(this.pendingMessages[group] = undefined)
     });
   }
-  joinMessages(arrayB: { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[], arrayA: SinlgeMessage[]): { message: SinlgeMessage, isLast: boolean, isFirst: boolean }[] {
+  joinMessages(arrayB: SinlgeMessage[], arrayA: SinlgeMessage[]): SinlgeMessage[] {
     arrayB.forEach(element => {
       let alreadyIn: boolean = false;
       arrayA.forEach(item => {
-        if (item.Id == element.message.Id)
+        if (item.Id == element.Id)
           alreadyIn = true;
       });
       if (!alreadyIn)
-        arrayA.push(element.message)
+        arrayA.push(element)
     });
-    return this.convertToMessageObj(arrayA);
+    return arrayA;
   }
   trimStr(str: string, maxLength: number): string {
     if (str != undefined && str.length > maxLength)
       str = str.substring(0, maxLength - 2) + "..";
     return str;
-  }
-  loadSelf() {
-    this.server.GetSelf().then((response) => this.currentUser = response.Data as UserPublic)
   }
   findGroupById(groupId: number): GroupInfo {
     if (groupId == undefined || groupId == null)

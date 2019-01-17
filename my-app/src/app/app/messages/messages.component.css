@@ -132,19 +132,26 @@
   border-radius: 100px;
 }
 
-.message {
+.message>div {
   margin: 4px;
   display: flex;
   word-break: break-all;
 }
 
 .sending {
-  margin: 4px;
+  margin: 5px;
   display: flex;
   word-break: break-all;
 }
 
-.sent {
+.name {
+
+  padding: 4px 70px 0;
+  color: #7c7c7c;
+  font-size: 12px;
+}
+
+.sent>div {
   flex-direction: row-reverse;
 }
 
@@ -454,6 +461,58 @@
   color: #7C7C7C;
 }
 
-#sendFile > input{
+#sendFile>input {
   display: none;
+}
+
+/***My profile***/
+#userSettings .item h3 {
+  color: #414755;
+  text-indent: 0px;
+  font-size: 24px;
+  margin: 10px;
+  font-weight: 400;
+}
+
+#userSettings .item {
+  border-bottom: solid 1px #7C7C7C;
+  display: flex;
+  justify-content: space-between;
+  height: 52px;
+}
+
+#userSettings .item img {
+  padding: 15px;
+  width: 20px;
+}
+
+#userSettings .item div {
+  padding: 0 15px;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+#userSettings .item input {
+  color: #414755;
+  text-indent: 0px;
+  font-size: 22px;
+  margin: 7px 10px 0;
+  font-weight: 400;
+  border: none;
+  border-bottom: solid 1px #414755
+}
+
+#userSettings .item p {
+  color: #ff3838;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  text-indent: 10px;
+}
+
+.clickable:hover {
+  background-color: #ededed;
+  cursor: pointer;
 }
