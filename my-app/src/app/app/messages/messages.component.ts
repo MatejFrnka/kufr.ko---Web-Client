@@ -1,3 +1,4 @@
+//IF YOU ARE READING THIS, IM SORRY :(, I DIDNT HAVE MUCH TIME OK!
 import { Component, OnInit, NgZone, Input } from '@angular/core';
 import { Server } from 'src/app/utility/server.service';
 import { GroupInfo } from 'src/app/models/group/group-info.model';
@@ -103,12 +104,6 @@ export class MessagesComponent implements OnInit {
   }
   onTimerEvent() {
     if (this.lastUpdated != undefined) {
-      let highestIdMessage = 0;
-      for (let key in this.messages) {
-        let i = this.messages[key][0].Id
-        if (i > highestIdMessage)
-          highestIdMessage = i;
-      }
       this.server.GetNewMessagesByDate(this.lastUpdated).then((response) => {
         this.lastUpdated = new Date(Date.now());
         (response.Data as SingleMessage[]).forEach(element => {
@@ -118,7 +113,7 @@ export class MessagesComponent implements OnInit {
             this.messages[element.Id_Group] = [element];
 
           if (this.groups.find(a => a.Id == element.Id != undefined))
-            this.groups.find(a => a.Id == element.Id);
+            this.groups.find(a => a.Id == element.Id).NewMessages++;
           else
             console.log("group" + element.Id + "was not found")
         });
