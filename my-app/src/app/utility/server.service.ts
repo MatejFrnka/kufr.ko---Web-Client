@@ -16,9 +16,9 @@ import { Router } from '@angular/router';
 @Injectable()
 
 export class Server {
-    //private ServerUrl = "http://kufrko-rest-api.azurewebsites.net/api/";
-    private ServerUrl = "http://localhost:49608/api/";
-    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router ) {
+    private ServerUrl = "http://kufrko-rest-api.azurewebsites.net/api/";
+    //private ServerUrl = "http://localhost:49608/api/";
+    constructor(private http: HttpClient, private cookieService: CookieService, private router: Router) {
     }
     LogIn(email: string, password: string): Promise<Response> {
         let httpOptions = {
@@ -54,7 +54,9 @@ export class Server {
         let httpOptions = this.getHeaders();
         return this.http.get<Response>(this.ServerUrl + "Group/GetAll", { headers: httpOptions })
             .toPromise()
-            .then((response) => response);
+            .then((response) => {
+                return response;
+            });
     }
     /***MESSAGES***/
     GetNewMessages(groupIds: number[], lastId: number) {
@@ -63,6 +65,12 @@ export class Server {
         return this.http.post<Response>(this.ServerUrl + "Message/GetNewMessages", JSON.stringify(newMessages), { headers: httpOptions })
             .toPromise()
             .then((response) => response);
+    }    
+    GetNewMessagesByDate(lastUpdated: Date) {
+        let httpOptions = this.getHeaders();
+        let params = new HttpParams().set("LastUpdated", lastUpdated.toISOString());
+        return this.http.get<Response>(this.ServerUrl + "Message/GetNewMessagesByDate", { headers: httpOptions, params: params })
+            .toPromise();
     }
     GetMessages(groupId: number, amount: number, startId: number = 0): Promise<Response> {
         let httpOptions = this.getHeaders();
@@ -93,25 +101,15 @@ export class Server {
     }
     GetPendingFriends(): Promise<Response> {
         let httpOptions = this.getHeaders();
-        return this.http.get<Response>(this.ServerUrl + "Friend/LoadPendingFromMe", { headers: httpOptions })
+        return this.http.get<Response>(this.ServerUrl + "Friend/LoadPendingToMe", { headers: httpOptions })
             .toPromise()
             .then((response) => response);
     }
-    UpdateFriendStatus(FriendId: number, FriendStatus: number): Promise<Response> {
-        let params = new HttpParams().set("IdReceiver", FriendId.toString()).set("friendStatus", FriendStatus.toString());
 
-        let headers = this.getHeaders();
-
-        return this.http.patch<Response>(this.ServerUrl + "Friend/ChangeFriendStatus", null, { headers: headers, params: params })
-            .toPromise()
-            .then((response) => response);
-    }
     SendFriendRequest(RecieverId: number): Promise<Response> {
-        let params = new HttpParams().set("IdReceiver", RecieverId.toString());
-
         let headers = this.getHeaders();
 
-        return this.http.post<Response>(this.ServerUrl + "Friend/CreateFriendRequest", null, { headers: headers, params: params })
+        return this.http.post<Response>(this.ServerUrl + "Friend/CreateFriendRequest", { User_id: RecieverId }, { headers: headers })
             .toPromise()
             .then((response) => response);
     }
@@ -120,6 +118,20 @@ export class Server {
         let headers = this.getHeaders();
 
         return this.http.get<Response>(this.ServerUrl + "Friend/SearchNewFriends", { headers: headers, params: params });
+    }
+    AcceptFriend(idFriend: number): Promise<Response> {
+        let headers = this.getHeaders();
+        return this.http.patch<Response>(this.ServerUrl + "Friend/AcceptFriend", { User_id: idFriend }, { headers: headers }).toPromise();
+    }
+    DenyFriend(idFriend: number): Promise<Response> {
+
+        let headers = this.getHeaders();
+        return this.http.patch<Response>(this.ServerUrl + "Friend/RemoveFriend", { User_id: idFriend }, { headers: headers }).toPromise();
+    }
+    BlockFriend(idFriend: number): Promise<Response> {
+
+        let headers = this.getHeaders();
+        return this.http.patch<Response>(this.ServerUrl + "Friend/BlockFriend", { User_id: idFriend }, { headers: headers }).toPromise();
     }
     /***SELF***/
     GetSelf(): Promise<Response> {
@@ -131,13 +143,13 @@ export class Server {
     UpdateUsername(username: string): Promise<Response> {
         let headers = this.getHeaders();
         let params = new HttpParams().set("username", username)
-        return this.http.get<Response>(this.ServerUrl + "Account/UpdateUsername",{ headers: headers, params: params })
+        return this.http.get<Response>(this.ServerUrl + "Account/UpdateUsername", { headers: headers, params: params })
             .toPromise()
     }
     UpdatePassword(password: string): Promise<Response> {
         let headers = this.getHeaders();
         let params = new HttpParams().set("password", password)
-        return this.http.get<Response>(this.ServerUrl + "Account/EditPassword",{ headers: headers, params: params })
+        return this.http.get<Response>(this.ServerUrl + "Account/EditPassword", { headers: headers, params: params })
             .toPromise()
     }
     UpdateProfilePicture(idProfilePicture: number): Promise<Response> {
@@ -150,6 +162,11 @@ export class Server {
         let headers = this.getHeaders();
         let params = new HttpParams().set("visibility", Visibility.toString())
         return this.http.get<Response>(this.ServerUrl + "Account/UpdateVisibility", { headers: headers, params: params })
+            .toPromise()
+    }
+    DeleteAccount() {
+        let headers = this.getHeaders();
+        return this.http.get<Response>(this.ServerUrl + "Account/DeleteSelf", { headers: headers })
             .toPromise()
     }
     /***FILE***/
@@ -171,10 +188,9 @@ export class Server {
             .toPromise();
     }
 
-    LogOut(){
-        console.log("asdf");
+    LogOut() {
         this.cookieService.delete("token", "/");
-        this.router.navigate["login"];
+        this.router.navigate(["/login"]);
     }
     private getHeaders() {
         let token = this.cookieService.get('token');

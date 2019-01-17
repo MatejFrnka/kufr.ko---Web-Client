@@ -1,11 +1,11 @@
 import { Component, OnInit, NgZone, Input } from '@angular/core';
 import { Server } from 'src/app/utility/server.service';
 import { GroupInfo } from 'src/app/models/group/group-info.model';
-import { SinlgeMessage } from 'src/app/models/messages/single-message.model';
+import { SingleMessage } from 'src/app/models/messages/single-message.model';
 import { UserPublic } from 'src/app/models/people/user-public.model';
 import { UserInfo } from 'src/app/models/messages/user-info.model';
 import { Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, timer } from 'rxjs';
 import { FileService } from '../../utility/file.service';
 
 @Component({
@@ -18,8 +18,8 @@ export class MessagesComponent implements OnInit {
   constructor(private server: Server, private router: Router, private ngZone: NgZone) { }
   private fileService = new FileService(this.server);
   public Search: string = "";
-  //Contorls left panel with people and messages
-  public SidePanelNumber: number = 2;
+  //Contorls left panel
+  public SidePanelNumber: number = 0;
 
   private groups: GroupInfo[];
 
@@ -32,18 +32,18 @@ export class MessagesComponent implements OnInit {
   }
   private _selectedGroupId: number;
 
-
   private friends: UserPublic[];
   private pendingFriends: UserPublic[];
   private searchResult: UserPublic[] = [];
   private searching: boolean = false;
 
-  private messages: { [id: number]: SinlgeMessage[]; } = {};
-  private pendingMessages: { [id: number]: SinlgeMessage[]; } = {};
+  private messages: { [id: number]: SingleMessage[]; } = {};
+  private pendingMessages: { [id: number]: SingleMessage[]; } = {};
   private messageInput: string = "";
   private messagesElement;
   private loadingMessages: { [id: number]: boolean } = {};
   private allMessagesLoaded: { [id: number]: boolean } = {};
+  private lastUpdated: Date;
 
   public password: string = ""
   public visibility: number = 0;
@@ -97,7 +97,32 @@ export class MessagesComponent implements OnInit {
   }
   deleteSelf() {
     if (confirm("Are you sure you want to delete your account?")) {
+      this.server.DeleteAccount();
+      this.server.LogOut();
+    }
+  }
+  onTimerEvent() {
+    if (this.lastUpdated != undefined) {
+      let highestIdMessage = 0;
+      for (let key in this.messages) {
+        let i = this.messages[key][0].Id
+        if (i > highestIdMessage)
+          highestIdMessage = i;
+      }
+      this.server.GetNewMessagesByDate(this.lastUpdated).then((response) => {
+        this.lastUpdated = new Date(Date.now());
+        (response.Data as SingleMessage[]).forEach(element => {
+          if (this.messages[element.Id_Group] != undefined)
+            this.messages[element.Id_Group].unshift(element);
+          else
+            this.messages[element.Id_Group] = [element];
 
+          if (this.groups.find(a => a.Id == element.Id != undefined))
+            this.groups.find(a => a.Id == element.Id);
+          else
+            console.log("group" + element.Id + "was not found")
+        });
+      })
     }
   }
 
@@ -112,6 +137,9 @@ export class MessagesComponent implements OnInit {
       passive: true
     };
     this.messagesElement = document.getElementById("messageBody");
+    this.ngZone.runOutsideAngular(() => {
+      setInterval(() => this.onTimerEvent(), 30000);
+    });
     this.ngZone.runOutsideAngular(() => {
       window.addEventListener('scroll', this.scroll, <any>this.eventOptions);
     });
@@ -148,6 +176,7 @@ export class MessagesComponent implements OnInit {
     this.server.GetSelf().then((response) => this.currentUser = response.Data as UserPublic)
   }
   isFirstOfGroup(indexOfMessage: number, idGroup: number): boolean {
+    return false;
     if (indexOfMessage == 0)
       return false;
     if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].Sent, this.messages[idGroup][indexOfMessage].Sent) > 300)
@@ -155,6 +184,7 @@ export class MessagesComponent implements OnInit {
     return false;
   }
   isLastOfGroup(indexOfMessage: number, idGroup: number): boolean {
+    return false;
     if (indexOfMessage == this.messages[idGroup].length - 1)
       return true;
     if (this.messages[idGroup][indexOfMessage].UserInfo.Id != this.messages[idGroup][indexOfMessage + 1].UserInfo.Id)
@@ -169,37 +199,42 @@ export class MessagesComponent implements OnInit {
   getNewMessages(group: number): Promise<any> {
     return this.server.GetNewMessages([group], this.messages[group][0].Id).then((response) => {
       this.CheckCode(response.StatusCode);
-      this.messages[group] = this.joinMessages(this.messages[group], (response.Data as SinlgeMessage[]));
+      this.messages[group] = this.joinMessages(this.messages[group], (response.Data as SingleMessage[]));
       this.MessageSeen(this.messages[group][0].Id);
+      this.lastUpdated = new Date(Date.now());
     })
   }
   loadMoreMessages() {
-    let selectedGroup = this.selectedGroupId;
-    if ((this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) && (this.allMessagesLoaded[selectedGroup] == undefined || !this.allMessagesLoaded)) {
-      this.loadingMessages[selectedGroup] = true;
-      this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].Id).then(response => {
-        this.CheckCode(response.StatusCode);
-        this.loadingMessages[selectedGroup] = false;
-        this.messages[selectedGroup] = this.messages[selectedGroup].concat(response.Data as SinlgeMessage[]);
-        this.MessageSeen(this.messages[selectedGroup][0].Id);
-        if ((response.Data as SinlgeMessage[]).length == 0)
-          this.allMessagesLoaded[selectedGroup] = true;
-      })
+    if (this.selectedGroupId != undefined) {
+      let selectedGroup = this.selectedGroupId;
+      if ((this.loadingMessages[selectedGroup] == undefined || !this.loadingMessages[selectedGroup]) && (this.allMessagesLoaded[selectedGroup] == undefined || !this.allMessagesLoaded)) {
+        this.loadingMessages[selectedGroup] = true;
+        this.server.GetMessages(selectedGroup, 20, this.messages[selectedGroup][this.messages[selectedGroup].length - 1].Id).then(response => {
+          this.CheckCode(response.StatusCode);
+          this.loadingMessages[selectedGroup] = false;
+          this.messages[selectedGroup] = this.messages[selectedGroup].concat(response.Data as SingleMessage[]);
+          this.MessageSeen(this.messages[selectedGroup][0].Id);
+          if ((response.Data as SingleMessage[]).length == 0)
+            this.allMessagesLoaded[selectedGroup] = true;
+          this.lastUpdated = new Date(Date.now());
+        })
+      }
     }
   }
   private scrollToBottom: boolean = false;
-  loadMessages(idGroup: number): SinlgeMessage[] {
+  loadMessages(idGroup: number): SingleMessage[] {
     if (this.messages[idGroup] == undefined) {
       let amount = 50;
       this.loadingMessages[idGroup] = true;
       this.server.GetMessages(idGroup, amount)
         .then((response) => {
           this.loadingMessages[idGroup] = false;
-          if ((response.Data as SinlgeMessage[]).length < amount)
+          if ((response.Data as SingleMessage[]).length < amount)
             this.allMessagesLoaded[idGroup] = true;
-          this.messages[idGroup] = response.Data as SinlgeMessage[];
+          this.messages[idGroup] = response.Data as SingleMessage[];
           this.MessageSeen(this.messages[idGroup][0].Id);
           this.scrollToBottom = true
+          this.lastUpdated = new Date(Date.now());
         });
     }
     return this.messages[idGroup];
@@ -213,7 +248,7 @@ export class MessagesComponent implements OnInit {
     let messageText = this.messageInput;
     this.messageInput = "";
     this.scrollToBottom = true;
-    let tempMessage = new SinlgeMessage();
+    let tempMessage = new SingleMessage();
     tempMessage.Text = messageText;
     tempMessage.UserInfo = new UserInfo();
     tempMessage.UserInfo.Id = this.currentUser.Id;
@@ -229,7 +264,7 @@ export class MessagesComponent implements OnInit {
       this.getNewMessages(group).then(this.pendingMessages[group] = undefined)
     });
   }
-  joinMessages(arrayB: SinlgeMessage[], arrayA: SinlgeMessage[]): SinlgeMessage[] {
+  joinMessages(arrayB: SingleMessage[], arrayA: SingleMessage[]): SingleMessage[] {
     arrayB.forEach(element => {
       let alreadyIn: boolean = false;
       arrayA.forEach(item => {
@@ -256,10 +291,12 @@ export class MessagesComponent implements OnInit {
     return "• Online";
   }
   changeUserStatus(UserId: number, Status: number) {
-    this.server.UpdateFriendStatus(UserId, Status).then((response) => {
-      this.CheckCode(response.StatusCode);
-      this.loadPeople();
-    })
+    if (Status == 0)
+      this.server.DenyFriend(UserId).then(() => this.loadPeople());
+    if (Status == 1)
+      this.server.AcceptFriend(UserId).then(() => this.loadPeople());
+    if (Status)
+      this.server.BlockFriend(UserId).then(() => this.loadPeople());
   }
   amountValidGroups(): number {
     let result = null;

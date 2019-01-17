@@ -1,8 +1,8 @@
 <div class="container">
   <div id="people">
-    <div class="header">
+    <div class="header sidepanel">
       <div style="width: 30px;">
-        <img src="../../../assets/UserSettings.svg" alt="User settings" (click)="SidePanelNumber=2">
+        <img src="../../../assets/Profile.svg" alt="User settings" (click)="SidePanelNumber=2">
       </div>
       <div>
         <h1>Kufr.ko</h1>
@@ -246,7 +246,7 @@
           'sent': message.UserIsSender,
           'recieved': !message.UserIsSender 
         }">
-            <div *ngIf="!message.UserIsSender && (i == 0 || messages[selectedGroupId][i].UserInfo.Id != messages[selectedGroupId][i-1].UserInfo.Id || isFirstOfGroup(i, selectedGroupId))"
+            <div *ngIf="false && !message.UserIsSender && (i == 0 || messages[selectedGroupId][i].UserInfo.Id != messages[selectedGroupId][i-1].UserInfo.Id || isFirstOfGroup(i, selectedGroupId))"
               class="name">
               {{message.UserInfo.Name}}
             </div>
@@ -283,19 +283,19 @@
       </div>
     </div>
     <div class="footer">
-      <div class="sendInput">
-        <input type="text" placeholder="Send a message..." name="messageText" [(ngModel)]="messageInput"
-          (keydown.enter)="sendMessage()" />
-      </div>
-      <div class="sendButton" id="sendFile">
-        <label for="selectFile">
-          <img src="../../../assets/Upload.svg" alt="" />
-        </label>
-        <input id="selectFile" type="file" (change)="handleFileInput($event.target.files)">
-      </div>
-      <div class="sendButton">
-        <img src="../../../assets/Send.svg" alt="" (click)="sendMessage()" (keydown)="sendMessage()" />
-      </div>
+        <div class="sendInput">
+          <input type="text" placeholder="Send a message..." name="messageText" [(ngModel)]="messageInput"
+            (keydown.enter)="sendMessage()" />
+        </div>
+        <div class="sendButton" id="sendFile">
+          <label for="selectFile">
+            <img src="../../../assets/Upload.svg" alt="" />
+          </label>
+          <input id="selectFile" type="file" (change)="handleFileInput($event.target.files)">
+        </div>
+        <div class="sendButton">
+          <img src="../../../assets/Send.svg" alt="" (click)="sendMessage()" (keydown)="sendMessage()" />
+        </div>
     </div>
   </div>
 </div>

@@ -37,7 +37,11 @@
   text-align: center;
   color: #fff;
 }
-
+.sidepanel img{
+  float: left;
+  margin: 8px -25px 5px 25px;
+  height: 28px;
+}
 /*** PEOPLE SECTION ***/
 .scroll {
   overflow-y: scroll;
@@ -502,6 +506,9 @@
   font-weight: 400;
   border: none;
   border-bottom: solid 1px #414755
+}
+#userSettings{
+  height: calc(100vh - 119px);
 }
 
 #userSettings .item p {
