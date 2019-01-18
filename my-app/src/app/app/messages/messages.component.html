@@ -246,7 +246,7 @@
           'sent': message.UserIsSender,
           'recieved': !message.UserIsSender 
         }">
-            <div *ngIf="false && !message.UserIsSender && (i == 0 || messages[selectedGroupId][i].UserInfo.Id != messages[selectedGroupId][i-1].UserInfo.Id || isFirstOfGroup(i, selectedGroupId))"
+            <div *ngIf="!message.UserIsSender && (i == 0 || messages[selectedGroupId][i].UserInfo.Id != messages[selectedGroupId][i-1].UserInfo.Id || isFirstOfGroup(i, selectedGroupId))"
               class="name">
               {{message.UserInfo.Name}}
             </div>

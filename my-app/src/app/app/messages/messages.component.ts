@@ -1,4 +1,4 @@
-//IF YOU ARE READING THIS, IM SORRY :(, I DIDNT HAVE MUCH TIME OK!
+//IF YOU ARE READING THIS, IM SORRY
 import { Component, OnInit, NgZone, Input } from '@angular/core';
 import { Server } from 'src/app/utility/server.service';
 import { GroupInfo } from 'src/app/models/group/group-info.model';
@@ -111,11 +111,15 @@ export class MessagesComponent implements OnInit {
             this.messages[element.Id_Group].unshift(element);
           else
             this.messages[element.Id_Group] = [element];
-
-          if (this.groups.find(a => a.Id == element.Id != undefined))
-            this.groups.find(a => a.Id == element.Id).NewMessages++;
+          this.loadPeople();
+          /*if (this.groups.find(a => a.Id == element.Id != undefined))
+            if (this.groups.find(a => a.Id == element.Id).NewMessages == undefined)
+              this.groups.find(a => a.Id == element.Id).NewMessages = 1;
+            else
+              this.groups.find(a => a.Id == element.Id).NewMessages++;
           else
-            console.log("group" + element.Id + "was not found")
+            console.log("group" + element.Id + "was not found")*/
+          this.ngZone.run(() => null);
         });
       })
     }
@@ -133,7 +137,7 @@ export class MessagesComponent implements OnInit {
     };
     this.messagesElement = document.getElementById("messageBody");
     this.ngZone.runOutsideAngular(() => {
-      setInterval(() => this.onTimerEvent(), 30000);
+      setInterval(() => this.onTimerEvent(), 10000);
     });
     this.ngZone.runOutsideAngular(() => {
       window.addEventListener('scroll', this.scroll, <any>this.eventOptions);
@@ -171,7 +175,6 @@ export class MessagesComponent implements OnInit {
     this.server.GetSelf().then((response) => this.currentUser = response.Data as UserPublic)
   }
   isFirstOfGroup(indexOfMessage: number, idGroup: number): boolean {
-    return false;
     if (indexOfMessage == 0)
       return false;
     if (this.dateDiff(this.messages[idGroup][indexOfMessage - 1].Sent, this.messages[idGroup][indexOfMessage].Sent) > 300)
@@ -179,7 +182,6 @@ export class MessagesComponent implements OnInit {
     return false;
   }
   isLastOfGroup(indexOfMessage: number, idGroup: number): boolean {
-    return false;
     if (indexOfMessage == this.messages[idGroup].length - 1)
       return true;
     if (this.messages[idGroup][indexOfMessage].UserInfo.Id != this.messages[idGroup][indexOfMessage + 1].UserInfo.Id)
